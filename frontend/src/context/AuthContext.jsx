@@ -20,9 +20,17 @@ export function AuthProvider({ children }) {
     return datosUsuario;
   }
 
-  async function registrar(nombre, correo, password, rol) {
-    const respuesta = await api.post("/auth/registro", { nombre, correo, password, rol });
+  async function crearUsuario(nombre, correo, rol) {
+    const respuesta = await api.post("/usuarios/crear", { nombre, correo, rol });
     return respuesta.data;
+  }
+
+  async function cambiarPassword(passwordActual, passwordNueva) {
+    await api.post("/auth/cambiar-password", { passwordActual, passwordNueva });
+
+    const actualizado = { ...usuario, debeCambiarPassword: false };
+    localStorage.setItem("usuario", JSON.stringify(actualizado));
+    setUsuario(actualizado);
   }
 
   function cerrarSesion() {
@@ -32,7 +40,9 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, login, registrar, cerrarSesion }}>
+    <AuthContext.Provider
+      value={{ usuario, login, crearUsuario, cambiarPassword, cerrarSesion }}
+    >
       {children}
     </AuthContext.Provider>
   );

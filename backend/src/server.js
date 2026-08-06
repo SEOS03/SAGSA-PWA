@@ -18,7 +18,7 @@ async function iniciarServidor() {
     console.log("✅ Conexión a MySQL establecida correctamente.");
 
     // Crea/actualiza las tablas según los modelos definidos (solo para desarrollo)
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log("✅ Modelos sincronizados con la base de datos.");
 
     app.listen(PORT, () => {

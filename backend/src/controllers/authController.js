@@ -2,44 +2,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { User } = require("../models");
 
-// POST /api/auth/registro
-async function registrar(req, res) {
-  try {
-    const { nombre, correo, password, rol } = req.body;
-
-    if (!nombre || !correo || !password) {
-      return res.status(400).json({ mensaje: "Nombre, correo y contraseña son obligatorios." });
-    }
-
-    const usuarioExistente = await User.findOne({ where: { correo } });
-    if (usuarioExistente) {
-      return res.status(409).json({ mensaje: "Ya existe una cuenta registrada con ese correo." });
-    }
-
-    const passwordHasheado = await bcrypt.hash(password, 10);
-
-    const nuevoUsuario = await User.create({
-      nombre,
-      correo,
-      password: passwordHasheado,
-      rol: rol || "instructor",
-    });
-
-    return res.status(201).json({
-      mensaje: "Usuario registrado correctamente.",
-      usuario: {
-        id: nuevoUsuario.id,
-        nombre: nuevoUsuario.nombre,
-        correo: nuevoUsuario.correo,
-        rol: nuevoUsuario.rol,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ mensaje: "Error al registrar el usuario." });
-  }
-}
-
 // POST /api/auth/login
 async function iniciarSesion(req, res) {
   try {
@@ -64,7 +26,7 @@ async function iniciarSesion(req, res) {
     }
 
     const token = jwt.sign(
-      { id: usuario.id, rol: usuario.rol, nombre: usuario.nombre },
+      { id: usuario.id, rol: usuario.rol, nombre: usuario.nombre, esSuperAdmin: usuario.esSuperAdmin },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "8h" }
     );
@@ -77,6 +39,8 @@ async function iniciarSesion(req, res) {
         nombre: usuario.nombre,
         correo: usuario.correo,
         rol: usuario.rol,
+        esSuperAdmin: usuario.esSuperAdmin,
+        debeCambiarPassword: usuario.debeCambiarPassword,
       },
     });
   } catch (error) {
@@ -88,9 +52,43 @@ async function iniciarSesion(req, res) {
 // GET /api/auth/perfil (ruta protegida, de prueba)
 async function obtenerPerfil(req, res) {
   const usuario = await User.findByPk(req.usuario.id, {
-    attributes: ["id", "nombre", "correo", "rol", "activo"],
+    attributes: ["id", "nombre", "correo", "rol", "activo", "debeCambiarPassword", "esSuperAdmin"],
   });
   return res.json({ usuario });
 }
 
-module.exports = { registrar, iniciarSesion, obtenerPerfil };
+// POST /api/auth/cambiar-password (ruta protegida)
+async function cambiarPassword(req, res) {
+  try {
+    const { passwordActual, passwordNueva } = req.body;
+
+    if (!passwordActual || !passwordNueva) {
+      return res.status(400).json({ mensaje: "La contraseña actual y la nueva son obligatorias." });
+    }
+
+    if (passwordNueva.length < 6) {
+      return res.status(400).json({ mensaje: "La nueva contraseña debe tener al menos 6 caracteres." });
+    }
+
+    const usuario = await User.findByPk(req.usuario.id);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    const passwordValido = await bcrypt.compare(passwordActual, usuario.password);
+    if (!passwordValido) {
+      return res.status(401).json({ mensaje: "La contraseña actual es incorrecta." });
+    }
+
+    usuario.password = await bcrypt.hash(passwordNueva, 10);
+    usuario.debeCambiarPassword = false;
+    await usuario.save();
+
+    return res.json({ mensaje: "Contraseña actualizada correctamente." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al cambiar la contraseña." });
+  }
+}
+
+module.exports = { iniciarSesion, obtenerPerfil, cambiarPassword };
