@@ -5,6 +5,9 @@ import RutaSoloAdmin from "./components/RutaSoloAdmin";
 import Login from "./pages/Login";
 import CambiarPassword from "./pages/CambiarPassword";
 import CrearUsuario from "./pages/CrearUsuario";
+import BuscarUsuarioPorDpi from "./pages/BuscarUsuarioPorDpi";
+import SolicitarRecuperacion from "./pages/SolicitarRecuperacion";
+import RestablecerPassword from "./pages/RestablecerPassword";
 import Panel from "./pages/Panel";
 import "./App.css";
 
@@ -15,6 +18,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/recuperar-password" element={<SolicitarRecuperacion />} />
+          <Route path="/restablecer-password" element={<RestablecerPassword />} />
           <Route
             path="/cambiar-password"
             element={
@@ -36,6 +41,14 @@ function App() {
             element={
               <RutaSoloAdmin>
                 <CrearUsuario />
+              </RutaSoloAdmin>
+            }
+          />
+          <Route
+            path="/panel/buscar-usuario"
+            element={
+              <RutaSoloAdmin>
+                <BuscarUsuarioPorDpi />
               </RutaSoloAdmin>
             }
           />

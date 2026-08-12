@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { User } = require("../models");
+const crypto = require("crypto");
+const { User, PasswordResetToken } = require("../models");
+const { enviarCorreoRecuperacion } = require("../config/mailer");
 
 // POST /api/auth/login
 async function iniciarSesion(req, res) {
@@ -91,4 +93,84 @@ async function cambiarPassword(req, res) {
   }
 }
 
-module.exports = { iniciarSesion, obtenerPerfil, cambiarPassword };
+// POST /api/auth/solicitar-recuperacion
+async function solicitarRecuperacion(req, res) {
+  try {
+    const { correo } = req.body;
+
+    if (!correo) {
+      return res.status(400).json({ mensaje: "El correo es obligatorio." });
+    }
+
+    // La respuesta es siempre la misma exista o no el correo, para no
+    // revelar qué direcciones están registradas (enumeración de usuarios).
+    const mensajeGenerico = "Si el correo existe en el sistema, recibirás un enlace para restablecer tu contraseña.";
+
+    const usuario = await User.findOne({ where: { correo } });
+    if (usuario) {
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiracion = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+      await PasswordResetToken.create({ token, usuarioId: usuario.id, expiracion });
+
+      const enlace = `${process.env.FRONTEND_URL || "http://localhost:5173"}/restablecer-password?token=${token}`;
+
+      try {
+        await enviarCorreoRecuperacion(usuario.correo, usuario.nombre, enlace);
+      } catch (errorCorreo) {
+        console.error("No se pudo enviar el correo de recuperación a", usuario.correo, "-", errorCorreo.message);
+      }
+    }
+
+    return res.json({ mensaje: mensajeGenerico });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al procesar la solicitud." });
+  }
+}
+
+// POST /api/auth/restablecer-password
+async function restablecerPassword(req, res) {
+  try {
+    const { token, nuevaPassword } = req.body;
+
+    if (!token || !nuevaPassword) {
+      return res.status(400).json({ mensaje: "El token y la nueva contraseña son obligatorios." });
+    }
+
+    if (nuevaPassword.length < 6) {
+      return res.status(400).json({ mensaje: "La nueva contraseña debe tener al menos 6 caracteres." });
+    }
+
+    const registroToken = await PasswordResetToken.findOne({ where: { token } });
+
+    if (!registroToken || registroToken.usado || registroToken.expiracion < new Date()) {
+      return res.status(400).json({ mensaje: "El enlace no es válido o ha expirado." });
+    }
+
+    const usuario = await User.findByPk(registroToken.usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    usuario.password = await bcrypt.hash(nuevaPassword, 10);
+    usuario.debeCambiarPassword = false;
+    await usuario.save();
+
+    registroToken.usado = true;
+    await registroToken.save();
+
+    return res.json({ mensaje: "Contraseña actualizada correctamente." });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al restablecer la contraseña." });
+  }
+}
+
+module.exports = {
+  iniciarSesion,
+  obtenerPerfil,
+  cambiarPassword,
+  solicitarRecuperacion,
+  restablecerPassword,
+};

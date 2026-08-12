@@ -20,8 +20,23 @@ export function AuthProvider({ children }) {
     return datosUsuario;
   }
 
-  async function crearUsuario(nombre, correo, rol) {
-    const respuesta = await api.post("/usuarios/crear", { nombre, correo, rol });
+  async function crearUsuario(nombre, correo, rol, dpi) {
+    const respuesta = await api.post("/usuarios/crear", { nombre, correo, rol, dpi });
+    return respuesta.data;
+  }
+
+  async function buscarUsuarioPorDpi(dpi) {
+    const respuesta = await api.get(`/usuarios/buscar-por-dpi/${dpi}`);
+    return respuesta.data;
+  }
+
+  async function solicitarRecuperacion(correo) {
+    const respuesta = await api.post("/auth/solicitar-recuperacion", { correo });
+    return respuesta.data;
+  }
+
+  async function restablecerPassword(token, nuevaPassword) {
+    const respuesta = await api.post("/auth/restablecer-password", { token, nuevaPassword });
     return respuesta.data;
   }
 
@@ -41,7 +56,16 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ usuario, login, crearUsuario, cambiarPassword, cerrarSesion }}
+      value={{
+        usuario,
+        login,
+        crearUsuario,
+        cambiarPassword,
+        cerrarSesion,
+        buscarUsuarioPorDpi,
+        solicitarRecuperacion,
+        restablecerPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -12,6 +12,7 @@ const ROLES_DISPONIBLES = [
 export default function CrearUsuario() {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
+  const [dpi, setDpi] = useState("");
   const [rol, setRol] = useState("instructor");
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
@@ -29,13 +30,20 @@ export default function CrearUsuario() {
     e.preventDefault();
     setError("");
     setExito("");
+
+    if (!/^\d{13}$/.test(dpi)) {
+      setError("El DPI debe tener exactamente 13 dígitos numéricos.");
+      return;
+    }
+
     setCargando(true);
 
     try {
-      const datos = await crearUsuario(nombre, correo, rol);
+      const datos = await crearUsuario(nombre, correo, rol, dpi);
       setExito(datos.mensaje);
       setNombre("");
       setCorreo("");
+      setDpi("");
       setRol("instructor");
     } catch (err) {
       const mensaje = err.response?.data?.mensaje || "No se pudo crear el usuario.";
@@ -72,6 +80,18 @@ export default function CrearUsuario() {
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               placeholder="correo@ejemplo.com"
+              required
+            />
+
+            <label htmlFor="dpi">Número de DPI</label>
+            <input
+              id="dpi"
+              type="text"
+              inputMode="numeric"
+              maxLength={13}
+              value={dpi}
+              onChange={(e) => setDpi(e.target.value.replace(/\D/g, ""))}
+              placeholder="13 dígitos, sin espacios ni guiones"
               required
             />
 

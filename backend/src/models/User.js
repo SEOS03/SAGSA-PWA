@@ -21,6 +21,12 @@ const User = sequelize.define(
       unique: true,
       validate: { isEmail: true },
     },
+    dpi: {
+      type: DataTypes.STRING(13),
+      allowNull: false,
+      unique: true,
+      validate: { is: /^\d{13}$/ },
+    },
     password: {
       type: DataTypes.STRING, // se almacena el hash, nunca la contraseña en texto plano
       allowNull: false,

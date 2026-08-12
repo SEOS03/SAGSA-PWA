@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 
@@ -56,6 +56,10 @@ export default function Login() {
               placeholder="••••••••"
               required
             />
+
+            <p className="enlace-olvido">
+              <Link to="/recuperar-password">¿Olvidaste tu contraseña?</Link>
+            </p>
 
             {error && <p className="mensaje-error">{error}</p>}
 

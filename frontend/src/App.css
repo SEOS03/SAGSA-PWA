@@ -109,6 +109,17 @@
   box-shadow: 0 0 0 3px rgba(184, 144, 46, 0.18);
 }
 
+.enlace-olvido {
+  text-align: right;
+  margin: 8px 0 0;
+}
+
+.enlace-olvido a {
+  font-size: 0.8rem;
+  color: var(--texto-secundario);
+  text-decoration: underline;
+}
+
 /* ---------- Botones ---------- */
 .formulario-auth button,
 .contenedor-panel button {

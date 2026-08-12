@@ -10,11 +10,17 @@ async function ejecutarSeed() {
   const nombre = process.env.MASTER_ADMIN_NOMBRE;
   const correo = process.env.MASTER_ADMIN_CORREO;
   const password = process.env.MASTER_ADMIN_PASSWORD;
+  const dpi = process.env.MASTER_ADMIN_DPI;
 
-  if (!nombre || !correo || !password) {
+  if (!nombre || !correo || !password || !dpi) {
     console.error(
-      "❌ Faltan MASTER_ADMIN_NOMBRE, MASTER_ADMIN_CORREO o MASTER_ADMIN_PASSWORD en el archivo .env."
+      "❌ Faltan MASTER_ADMIN_NOMBRE, MASTER_ADMIN_CORREO, MASTER_ADMIN_PASSWORD o MASTER_ADMIN_DPI en el archivo .env."
     );
+    process.exit(1);
+  }
+
+  if (!/^\d{13}$/.test(dpi)) {
+    console.error("❌ MASTER_ADMIN_DPI debe tener exactamente 13 dígitos numéricos.");
     process.exit(1);
   }
 
@@ -31,6 +37,7 @@ async function ejecutarSeed() {
   await User.create({
     nombre,
     correo,
+    dpi,
     password: passwordHasheado,
     rol: "administrador",
     debeCambiarPassword: true,

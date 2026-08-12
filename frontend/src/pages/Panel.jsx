@@ -22,9 +22,14 @@ export default function Panel() {
           </p>
 
           {usuario?.rol === "administrador" && (
-            <p className="enlace-secundario">
-              <Link to="/panel/crear-usuario">Crear usuario</Link>
-            </p>
+            <>
+              <p className="enlace-secundario">
+                <Link to="/panel/crear-usuario">Crear usuario</Link>
+              </p>
+              <p className="enlace-secundario">
+                <Link to="/panel/buscar-usuario">Buscar usuario por DPI</Link>
+              </p>
+            </>
           )}
 
           <p className="nota">

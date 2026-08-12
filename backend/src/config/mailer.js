@@ -27,4 +27,18 @@ async function enviarCorreoBienvenida(correo, nombre, passwordTemporal) {
   });
 }
 
-module.exports = { enviarCorreoBienvenida };
+async function enviarCorreoRecuperacion(correo, nombre, enlace) {
+  await transportador.sendMail({
+    from: `"Sagsa Academy" <${process.env.EMAIL_USER}>`,
+    to: correo,
+    subject: "Recuperación de contraseña — Sagsa Academy",
+    html: `
+      <p>Hola ${nombre},</p>
+      <p>Solicitaste restablecer tu contraseña en el Sistema de Control de Vuelos de Sagsa Academy.</p>
+      <p><a href="${enlace}">Haz clic aquí para crear una nueva contraseña</a></p>
+      <p>Este enlace vence en 1 hora. Si no solicitaste este cambio, puedes ignorar este correo.</p>
+    `,
+  });
+}
+
+module.exports = { enviarCorreoBienvenida, enviarCorreoRecuperacion };
