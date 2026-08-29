@@ -54,6 +54,78 @@ export function AuthProvider({ children }) {
     setUsuario(null);
   }
 
+  // ---------- Módulo 2: Recursos (aeronaves y simuladores) ----------
+
+  async function listarRecursos(tipoRecurso) {
+    const respuesta = await api.get("/recursos", { params: tipoRecurso ? { tipoRecurso } : {} });
+    return respuesta.data;
+  }
+
+  async function obtenerRecurso(id) {
+    const respuesta = await api.get(`/recursos/${id}`);
+    return respuesta.data;
+  }
+
+  async function crearRecurso(datos) {
+    const respuesta = await api.post("/recursos", datos);
+    return respuesta.data;
+  }
+
+  async function actualizarRecurso(id, datos) {
+    const respuesta = await api.put(`/recursos/${id}`, datos);
+    return respuesta.data;
+  }
+
+  async function darDeBajaRecurso(id) {
+    const respuesta = await api.delete(`/recursos/${id}`);
+    return respuesta.data;
+  }
+
+  async function cambiarEstadoRecurso(id, estado) {
+    const respuesta = await api.patch(`/recursos/${id}/estado`, { estado });
+    return respuesta.data;
+  }
+
+  async function actualizarHorasRecurso(id, horasAcumuladas) {
+    const respuesta = await api.patch(`/recursos/${id}/horas`, { horasAcumuladas });
+    return respuesta.data;
+  }
+
+  async function registrarMantenimiento(recursoId, datos) {
+    const respuesta = await api.post(`/recursos/${recursoId}/mantenimientos`, datos);
+    return respuesta.data;
+  }
+
+  async function listarMantenimientos(recursoId) {
+    const respuesta = await api.get(`/recursos/${recursoId}/mantenimientos`);
+    return respuesta.data;
+  }
+
+  async function finalizarMantenimiento(mantenimientoId, datos) {
+    const respuesta = await api.put(`/mantenimientos/${mantenimientoId}/finalizar`, datos);
+    return respuesta.data;
+  }
+
+  async function listarSolicitudesPendientes() {
+    const respuesta = await api.get("/solicitudes", { params: { estado: "pendiente" } });
+    return respuesta.data;
+  }
+
+  async function listarMisSolicitudes() {
+    const respuesta = await api.get("/solicitudes/mias");
+    return respuesta.data;
+  }
+
+  async function aprobarSolicitud(id) {
+    const respuesta = await api.put(`/solicitudes/${id}/aprobar`);
+    return respuesta.data;
+  }
+
+  async function rechazarSolicitud(id, motivoRechazo) {
+    const respuesta = await api.put(`/solicitudes/${id}/rechazar`, { motivoRechazo });
+    return respuesta.data;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -65,6 +137,20 @@ export function AuthProvider({ children }) {
         buscarUsuarioPorDpi,
         solicitarRecuperacion,
         restablecerPassword,
+        listarRecursos,
+        obtenerRecurso,
+        crearRecurso,
+        actualizarRecurso,
+        darDeBajaRecurso,
+        cambiarEstadoRecurso,
+        actualizarHorasRecurso,
+        registrarMantenimiento,
+        listarMantenimientos,
+        finalizarMantenimiento,
+        listarSolicitudesPendientes,
+        listarMisSolicitudes,
+        aprobarSolicitud,
+        rechazarSolicitud,
       }}
     >
       {children}

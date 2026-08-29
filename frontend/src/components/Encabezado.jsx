@@ -1,4 +1,9 @@
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+
 export default function Encabezado({ subtitulo }) {
+  const { usuario } = useAuth();
+
   return (
     <header className="encabezado">
       <div className="encabezado__marca">
@@ -15,6 +20,12 @@ export default function Encabezado({ subtitulo }) {
           {subtitulo && <span className="encabezado__subtitulo">{subtitulo}</span>}
         </div>
       </div>
+
+      {usuario && (
+        <nav className="encabezado__nav">
+          <Link to="/panel/recursos">Recursos</Link>
+        </nav>
+      )}
     </header>
   );
 }

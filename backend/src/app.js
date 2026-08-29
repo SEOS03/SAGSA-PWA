@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const usuarioRoutes = require("./routes/usuarioRoutes");
+const recursoRoutes = require("./routes/recursoRoutes");
+const mantenimientoRoutes = require("./routes/mantenimientoRoutes");
+const solicitudRoutes = require("./routes/solicitudRoutes");
 
 const app = express();
 
@@ -15,6 +18,9 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuarioRoutes);
+app.use("/api/recursos", recursoRoutes);
+app.use("/api/mantenimientos", mantenimientoRoutes);
+app.use("/api/solicitudes", solicitudRoutes);
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {

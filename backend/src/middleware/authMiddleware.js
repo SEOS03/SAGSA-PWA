@@ -30,4 +30,13 @@ function verificarRol(...rolesPermitidos) {
   };
 }
 
-module.exports = { verificarToken, verificarRol };
+// Middleware adicional: restringe el acceso exclusivamente al super administrador
+// (un usuario con rol "administrador" y esSuperAdmin = true)
+function verificarSuperAdmin(req, res, next) {
+  if (!req.usuario.esSuperAdmin) {
+    return res.status(403).json({ mensaje: "Solo el super administrador puede realizar esta acción." });
+  }
+  next();
+}
+
+module.exports = { verificarToken, verificarRol, verificarSuperAdmin };

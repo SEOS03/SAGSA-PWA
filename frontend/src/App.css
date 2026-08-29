@@ -41,6 +41,28 @@
   color: #cfc9b8;
 }
 
+.encabezado__nav {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 14px;
+}
+
+.encabezado__nav a {
+  color: var(--sagsa-dorado-claro);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.encabezado__nav a:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Layout general ---------- */
 .pagina {
   flex: 1;
@@ -205,5 +227,293 @@
 @media (min-width: 1024px) {
   .pagina {
     padding-top: 48px;
+  }
+}
+
+/* ---------- Módulo de Recursos ---------- */
+.contenedor-ancho {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.encabezado-seccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.encabezado-seccion__enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ---------- Pestañas ---------- */
+.pestanas {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.pestana {
+  padding: 10px 16px;
+  min-height: auto;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pestana:hover {
+  color: var(--texto);
+}
+
+.pestana--activa {
+  color: var(--sagsa-dorado-oscuro);
+  border-bottom-color: var(--sagsa-dorado);
+}
+
+/* ---------- Tarjetas de recurso / solicitud ---------- */
+.lista-recursos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tarjeta-recurso,
+.tarjeta-solicitud {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--sagsa-dorado);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-suave);
+  padding: 16px;
+  text-align: left;
+}
+
+.tarjeta-recurso__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.tarjeta-recurso__matricula {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.tarjeta-recurso__modelo {
+  color: var(--texto-secundario);
+  font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+
+.tarjeta-recurso__horas {
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+}
+
+.tarjeta-recurso__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--borde);
+}
+
+.tarjeta-recurso__acciones-admin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.accion-inline {
+  display: flex;
+  gap: 8px;
+}
+
+.accion-inline select,
+.accion-inline input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 0.88rem;
+}
+
+/* ---------- Indicadores de estado ---------- */
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.estado-badge::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.estado-badge--disponible {
+  color: var(--exito);
+  background: var(--exito-bg);
+}
+
+.estado-badge--en_vuelo {
+  color: var(--info);
+  background: var(--info-bg);
+}
+
+.estado-badge--proximo_a_mantenimiento {
+  color: var(--advertencia);
+  background: var(--advertencia-bg);
+}
+
+.estado-badge--en_mantenimiento {
+  color: var(--sagsa-dorado-oscuro);
+  background: rgba(184, 144, 46, 0.14);
+}
+
+.estado-badge--fuera_de_servicio,
+.estado-badge--solicitud-rechazada {
+  color: var(--error);
+  background: var(--error-bg);
+}
+
+.estado-badge--pendiente,
+.estado-badge--solicitud-pendiente {
+  color: var(--advertencia);
+  background: var(--advertencia-bg);
+}
+
+.estado-badge--solicitud-aprobada {
+  color: var(--exito);
+  background: var(--exito-bg);
+}
+
+/* ---------- Botones pequeños de acción ---------- */
+.btn-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  min-height: 38px;
+  background: var(--sagsa-negro);
+  color: var(--sagsa-dorado-claro);
+  border: 1px solid var(--sagsa-negro);
+  border-radius: var(--radio-chico);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-chip:hover:not(:disabled) {
+  background: var(--sagsa-dorado);
+  color: var(--sagsa-negro);
+  border-color: var(--sagsa-dorado);
+}
+
+.btn-chip:disabled {
+  background: var(--borde);
+  border-color: var(--borde);
+  color: var(--texto-secundario);
+  cursor: not-allowed;
+}
+
+.btn-chip--secundario {
+  background: transparent;
+  color: var(--sagsa-dorado-oscuro);
+  border-color: var(--sagsa-dorado);
+}
+
+.btn-chip--secundario:hover:not(:disabled) {
+  background: var(--sagsa-dorado);
+  color: var(--sagsa-negro);
+}
+
+.btn-chip--peligro {
+  background: transparent;
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.btn-chip--peligro:hover:not(:disabled) {
+  background: var(--error);
+  color: #fff;
+}
+
+/* ---------- Modal ---------- */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 13, 13, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  z-index: 50;
+}
+
+.modal-caja {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--superficie);
+  border-top: 4px solid var(--sagsa-dorado);
+  border-radius: var(--radio) var(--radio) 0 0;
+  box-shadow: var(--sombra);
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.modal-caja__acciones {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.modal-caja__acciones .btn-chip {
+  flex: 1;
+}
+
+.modal-caja__acciones button[type="submit"] {
+  flex: 1;
+  margin-top: 0;
+}
+
+@media (min-width: 480px) {
+  .modal-fondo {
+    align-items: center;
+    padding: 20px;
+  }
+
+  .modal-caja {
+    border-radius: var(--radio);
   }
 }
