@@ -248,5 +248,4 @@ module.exports = {
   actualizarHoras,
   registrarMantenimiento,
   listarMantenimientos,
-  ejecutarOEnviarSolicitud,
 };

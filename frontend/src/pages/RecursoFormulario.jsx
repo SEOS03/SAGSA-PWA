@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 
@@ -12,7 +12,6 @@ const TIPOS_RECURSO = [
 export default function RecursoFormulario() {
   const { id } = useParams();
   const esEdicion = !!id;
-  const navigate = useNavigate();
   const { obtenerRecurso, crearRecurso, actualizarRecurso } = useAuth();
 
   const [matricula, setMatricula] = useState("");

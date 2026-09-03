@@ -4,7 +4,7 @@
 // y este usuario resuelve el problema de "quién crea al primer administrador".
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
-const { sequelize, User, Recurso } = require("./models");
+const { sequelize, User, Recurso, Programa } = require("./models");
 
 // Flota real de la escuela (Sprint 2 — Módulo de Recursos)
 const RECURSOS_FLOTA = [
@@ -15,6 +15,38 @@ const RECURSOS_FLOTA = [
   { matricula: "GX100", tipoRecurso: "simulador" },
   { matricula: "PAS", tipoRecurso: "simulador" },
   { matricula: "PHS-4M", tipoRecurso: "simulador" },
+];
+
+// Catálogo real de programas de instrucción (Sprint 3 — Módulo de Vuelos)
+const PROGRAMAS_REALES = [
+  {
+    nombre: "piloto_privado",
+    horasSimuladorTotal: 16,
+    horasAvionTotal: 35,
+    totalLecciones: 27,
+    leccionSolo: 12,
+  },
+  {
+    nombre: "ifr",
+    horasSimuladorTotal: 26,
+    horasAvionTotal: 14,
+    totalLecciones: null,
+    leccionSolo: null,
+  },
+  {
+    nombre: "bimotor",
+    horasSimuladorTotal: 5,
+    horasAvionTotal: 6,
+    totalLecciones: null,
+    leccionSolo: null,
+  },
+  {
+    nombre: "comercial",
+    horasSimuladorTotal: 10,
+    horasAvionTotal: 10,
+    totalLecciones: null,
+    leccionSolo: null,
+  },
 ];
 
 async function sembrarRecursos() {
@@ -31,6 +63,19 @@ async function sembrarRecursos() {
       estado: "disponible",
     });
     console.log(`✅ Recurso creado: ${datos.matricula}`);
+  }
+}
+
+async function sembrarProgramas() {
+  for (const datos of PROGRAMAS_REALES) {
+    const existente = await Programa.findOne({ where: { nombre: datos.nombre } });
+    if (existente) {
+      console.log(`ℹ️ El programa ${datos.nombre} ya existe. No se creó de nuevo.`);
+      continue;
+    }
+
+    await Programa.create(datos);
+    console.log(`✅ Programa creado: ${datos.nombre}`);
   }
 }
 
@@ -73,6 +118,7 @@ async function ejecutarSeed() {
   }
 
   await sembrarRecursos();
+  await sembrarProgramas();
   process.exit(0);
 }
 

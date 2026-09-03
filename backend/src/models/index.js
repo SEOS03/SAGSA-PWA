@@ -4,6 +4,10 @@ const PasswordResetToken = require("./PasswordResetToken");
 const Recurso = require("./Recurso");
 const Mantenimiento = require("./Mantenimiento");
 const SolicitudCambio = require("./SolicitudCambio");
+const Programa = require("./Programa");
+const ProgresoAlumno = require("./ProgresoAlumno");
+const Vuelo = require("./Vuelo");
+const LecturaHorometro = require("./LecturaHorometro");
 
 User.hasMany(PasswordResetToken, { foreignKey: "usuarioId" });
 PasswordResetToken.belongsTo(User, { foreignKey: "usuarioId" });
@@ -21,6 +25,26 @@ SolicitudCambio.belongsTo(User, { foreignKey: "solicitadoPor", as: "solicitante"
 User.hasMany(SolicitudCambio, { foreignKey: "revisadoPor", as: "solicitudesRevisadas" });
 SolicitudCambio.belongsTo(User, { foreignKey: "revisadoPor", as: "revisor" });
 
+// ---------- Sprint 3 — Módulo de Vuelos (Paso 1: solo estructura) ----------
+
+Programa.hasMany(ProgresoAlumno, { foreignKey: "programaId" });
+ProgresoAlumno.belongsTo(Programa, { foreignKey: "programaId" });
+
+User.hasMany(ProgresoAlumno, { foreignKey: "alumnoId", as: "progresos" });
+ProgresoAlumno.belongsTo(User, { foreignKey: "alumnoId", as: "alumno" });
+
+Recurso.hasMany(Vuelo, { foreignKey: "recursoId" });
+Vuelo.belongsTo(Recurso, { foreignKey: "recursoId" });
+
+User.hasMany(Vuelo, { foreignKey: "instructorId", as: "vuelosComoInstructor" });
+Vuelo.belongsTo(User, { foreignKey: "instructorId", as: "instructor" });
+
+User.hasMany(Vuelo, { foreignKey: "alumnoId", as: "vuelosComoAlumno" });
+Vuelo.belongsTo(User, { foreignKey: "alumnoId", as: "alumno" });
+
+Vuelo.hasOne(LecturaHorometro, { foreignKey: "vueloId" });
+LecturaHorometro.belongsTo(Vuelo, { foreignKey: "vueloId" });
+
 module.exports = {
   sequelize,
   User,
@@ -28,4 +52,8 @@ module.exports = {
   Recurso,
   Mantenimiento,
   SolicitudCambio,
+  Programa,
+  ProgresoAlumno,
+  Vuelo,
+  LecturaHorometro,
 };

@@ -14,7 +14,7 @@ function verificarToken(req, res, next) {
     const datosUsuario = jwt.verify(token, process.env.JWT_SECRET);
     req.usuario = datosUsuario; // disponible en los controladores siguientes (id, rol)
     next();
-  } catch (error) {
+  } catch {
     return res.status(403).json({ mensaje: "Token inválido o expirado." });
   }
 }

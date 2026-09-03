@@ -1,4 +1,4 @@
-const { Recurso, Mantenimiento } = require("../models");
+const { Mantenimiento } = require("../models");
 
 // Reglas de negocio compartidas entre: (1) la aplicación directa de un cambio
 // por el super administrador, (2) la validación previa a crear una
