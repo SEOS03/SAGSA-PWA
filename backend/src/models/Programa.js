@@ -14,7 +14,6 @@ const Programa = sequelize.define(
     nombre: {
       type: DataTypes.ENUM("piloto_privado", "ifr", "bimotor", "comercial"),
       allowNull: false,
-      unique: true,
     },
     horasSimuladorTotal: {
       type: DataTypes.DECIMAL(10, 2),
@@ -36,6 +35,7 @@ const Programa = sequelize.define(
   {
     tableName: "programas",
     timestamps: true,
+    indexes: [{ unique: true, fields: ["nombre"], name: "uq_programas_nombre" }],
   }
 );
 

@@ -1,5 +1,7 @@
 const { Op, Sequelize } = require("sequelize");
-const { sequelize, Vuelo, Recurso, User } = require("../models");
+const { sequelize, Vuelo, Recurso, User, ProgresoAlumno, Programa } = require("../models");
+const calcularPrioridad = require("../utils/calcularPrioridad");
+const { serializarVuelo, serializarVuelos } = require("../utils/serializarVuelo");
 
 const MOTIVOS_CANCELACION = [
   "cancelado_por_alumno",
@@ -115,6 +117,18 @@ async function crearVuelo(req, res) {
     const estado =
       confirmacionInstructor && confirmacionAlumno && aprobacionSuperAdmin ? "confirmado" : "en_proceso";
 
+    // Prioridad del alumno en piloto_privado al momento de crear el vuelo.
+    // Si no tiene progreso registrado en ese programa, queda sin calcular.
+    const progresoPilotoPrivado = await ProgresoAlumno.findOne({
+      where: { alumnoId },
+      include: [{ model: Programa, where: { nombre: "piloto_privado" } }],
+      transaction,
+    });
+
+    const prioridadCalculada = progresoPilotoPrivado
+      ? calcularPrioridad(progresoPilotoPrivado.leccionActual, "piloto_privado")
+      : null;
+
     const vuelo = await Vuelo.create(
       {
         recursoId,
@@ -127,6 +141,7 @@ async function crearVuelo(req, res) {
         confirmacionInstructor,
         confirmacionAlumno,
         aprobacionSuperAdmin,
+        prioridadCalculada,
         creadoPor: req.usuario.id,
       },
       { transaction }
@@ -134,7 +149,10 @@ async function crearVuelo(req, res) {
 
     await transaction.commit();
 
-    return res.status(201).json({ mensaje: "Vuelo programado correctamente.", vuelo });
+    return res.status(201).json({
+      mensaje: "Vuelo programado correctamente.",
+      vuelo: serializarVuelo(vuelo, req.usuario),
+    });
   } catch (error) {
     await transaction.rollback();
     console.error(error);
@@ -160,7 +178,10 @@ async function listarVuelos(req, res) {
     }
 
     const vuelos = await Vuelo.findAll({ where: filtro, order: [["fechaHora", "ASC"]] });
-    return res.json({ mensaje: "Vuelos obtenidos correctamente.", vuelos });
+    return res.json({
+      mensaje: "Vuelos obtenidos correctamente.",
+      vuelos: serializarVuelos(vuelos, req.usuario),
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener los vuelos." });
@@ -174,7 +195,10 @@ async function obtenerVuelo(req, res) {
     if (!vuelo) {
       return res.status(404).json({ mensaje: "Vuelo no encontrado." });
     }
-    return res.json({ mensaje: "Vuelo obtenido correctamente.", vuelo });
+    return res.json({
+      mensaje: "Vuelo obtenido correctamente.",
+      vuelo: serializarVuelo(vuelo, req.usuario),
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener el vuelo." });
@@ -210,11 +234,87 @@ async function cancelarVuelo(req, res) {
     vuelo.canceladoPor = usuarioId;
     await vuelo.save();
 
-    return res.json({ mensaje: "Vuelo cancelado correctamente.", vuelo });
+    return res.json({
+      mensaje: "Vuelo cancelado correctamente.",
+      vuelo: serializarVuelo(vuelo, req.usuario),
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al cancelar el vuelo." });
   }
 }
 
-module.exports = { crearVuelo, listarVuelos, obtenerVuelo, cancelarVuelo };
+// Lógica compartida por los 3 endpoints de confirmación: busca el vuelo,
+// valida permiso, rechaza si ya está resuelto (cancelado/confirmado),
+// marca la bandera correspondiente y, si las 3 ya quedan en true, pasa
+// el vuelo a "confirmado" en la misma operación.
+async function confirmarParte(req, res, { campo, tienePermiso, mensajeSinPermiso, mensajeExito }) {
+  try {
+    const vuelo = await Vuelo.findByPk(req.params.id);
+    if (!vuelo) {
+      return res.status(404).json({ mensaje: "Vuelo no encontrado." });
+    }
+
+    if (tienePermiso && !tienePermiso(req.usuario, vuelo)) {
+      return res.status(403).json({ mensaje: mensajeSinPermiso });
+    }
+
+    if (vuelo.estado === "cancelado" || vuelo.estado === "confirmado") {
+      return res.status(409).json({
+        mensaje: `No se puede confirmar: el vuelo ya está en estado "${vuelo.estado}".`,
+      });
+    }
+
+    vuelo[campo] = true;
+
+    if (vuelo.confirmacionInstructor && vuelo.confirmacionAlumno && vuelo.aprobacionSuperAdmin) {
+      vuelo.estado = "confirmado";
+    }
+
+    await vuelo.save();
+
+    return res.json({ mensaje: mensajeExito, vuelo: serializarVuelo(vuelo, req.usuario) });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al confirmar el vuelo." });
+  }
+}
+
+// PATCH /api/vuelos/:id/confirmar-instructor (solo el instructor asignado a ese vuelo)
+async function confirmarInstructor(req, res) {
+  return confirmarParte(req, res, {
+    campo: "confirmacionInstructor",
+    tienePermiso: (usuario, vuelo) => Number(usuario.id) === Number(vuelo.instructorId),
+    mensajeSinPermiso: "Solo el instructor asignado a este vuelo puede confirmarlo.",
+    mensajeExito: "Confirmación del instructor registrada correctamente.",
+  });
+}
+
+// PATCH /api/vuelos/:id/confirmar-alumno (solo el alumno asignado a ese vuelo)
+async function confirmarAlumno(req, res) {
+  return confirmarParte(req, res, {
+    campo: "confirmacionAlumno",
+    tienePermiso: (usuario, vuelo) => Number(usuario.id) === Number(vuelo.alumnoId),
+    mensajeSinPermiso: "Solo el alumno asignado a este vuelo puede confirmarlo.",
+    mensajeExito: "Confirmación del alumno registrada correctamente.",
+  });
+}
+
+// PATCH /api/vuelos/:id/aprobar-superadmin
+// (permiso de super admin ya exigido por verificarSuperAdmin en la ruta)
+async function aprobarSuperAdmin(req, res) {
+  return confirmarParte(req, res, {
+    campo: "aprobacionSuperAdmin",
+    mensajeExito: "Aprobación del super administrador registrada correctamente.",
+  });
+}
+
+module.exports = {
+  crearVuelo,
+  listarVuelos,
+  obtenerVuelo,
+  cancelarVuelo,
+  confirmarInstructor,
+  confirmarAlumno,
+  aprobarSuperAdmin,
+};

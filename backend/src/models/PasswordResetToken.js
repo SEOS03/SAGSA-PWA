@@ -13,7 +13,6 @@ const PasswordResetToken = sequelize.define(
     token: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     usuarioId: {
       type: DataTypes.INTEGER,
@@ -32,6 +31,7 @@ const PasswordResetToken = sequelize.define(
   {
     tableName: "password_reset_tokens",
     timestamps: true,
+    indexes: [{ unique: true, fields: ["token"], name: "uq_password_reset_tokens_token" }],
   }
 );
 

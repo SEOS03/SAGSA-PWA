@@ -15,7 +15,6 @@ const Recurso = sequelize.define(
     matricula: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     modelo: {
       type: DataTypes.STRING,
@@ -52,6 +51,7 @@ const Recurso = sequelize.define(
   {
     tableName: "recursos",
     timestamps: true,
+    indexes: [{ unique: true, fields: ["matricula"], name: "uq_recursos_matricula" }],
   }
 );
 

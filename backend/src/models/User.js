@@ -18,13 +18,11 @@ const User = sequelize.define(
     correo: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
       validate: { isEmail: true },
     },
     dpi: {
       type: DataTypes.STRING(13),
       allowNull: false,
-      unique: true,
       validate: { is: /^\d{13}$/ },
     },
     password: {
@@ -54,6 +52,13 @@ const User = sequelize.define(
   {
     tableName: "usuarios",
     timestamps: true, // agrega createdAt y updatedAt automáticamente
+    // Índices únicos declarados aquí (con nombre fijo) en vez de "unique: true"
+    // en la columna: es la forma que sequelize.sync({alter:true}) sí reconoce
+    // como ya existente entre reinicios, sin duplicarla cada vez.
+    indexes: [
+      { unique: true, fields: ["correo"], name: "uq_usuarios_correo" },
+      { unique: true, fields: ["dpi"], name: "uq_usuarios_dpi" },
+    ],
   }
 );
 
