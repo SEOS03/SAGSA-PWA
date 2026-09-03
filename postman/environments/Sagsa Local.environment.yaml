@@ -1,0 +1,11 @@
+name: Sagsa Local
+values:
+  - key: base_url
+    value: ''
+  - key: token_alumno
+    value: ''
+  - key: token_instructor
+    value: ''
+  - key: token_superadmin
+    value: ''
+color: 120
