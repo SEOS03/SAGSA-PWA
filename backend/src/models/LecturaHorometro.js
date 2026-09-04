@@ -52,10 +52,35 @@ const LecturaHorometro = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    // "en_progreso" se agregó en el Paso 5: el registro nace así apenas
+    // reporta el primer actor (instructor o alumno) y solo pasa a
+    // "pendiente_validacion" cuando AMBOS ya reportaron. Sin este estado
+    // inicial distinto, un registro con un solo reporte habría quedado
+    // marcado "pendiente_validacion" desde el arranque (ese era el default
+    // original del Paso 1) y se hubiera podido validar antes de tiempo,
+    // con campos del segundo actor todavía en null.
     estado: {
-      type: DataTypes.ENUM("pendiente_validacion", "validado", "en_disputa"),
+      type: DataTypes.ENUM("en_progreso", "pendiente_validacion", "validado", "en_disputa"),
       allowNull: false,
-      defaultValue: "pendiente_validacion",
+      defaultValue: "en_progreso",
+    },
+    // Verificaciones informativas calculadas cuando ambos reportes ya están
+    // presentes (Paso 5) — nunca se autoaplican, solo apoyan al validador.
+    coincidenciaHorometroInicial: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    coherenciaHorometroFinal: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    validadoPor: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    fechaValidacion: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

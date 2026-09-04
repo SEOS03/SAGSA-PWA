@@ -48,6 +48,14 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    // Solo tiene efecto en usuarios con rol "administrador". El super admin
+    // siempre puede validar horómetros sin necesidad de este campo — eso se
+    // verifica en el controlador (esSuperAdmin), no aquí.
+    puedeValidarHorometro: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     tableName: "usuarios",

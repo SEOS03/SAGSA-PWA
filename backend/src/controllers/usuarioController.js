@@ -103,4 +103,47 @@ async function buscarPorDpi(req, res) {
   }
 }
 
-module.exports = { crearUsuario, buscarPorDpi };
+// PATCH /api/usuarios/:id/permiso-validar-horometro (solo super admin)
+async function otorgarPermisoValidarHorometro(req, res) {
+  try {
+    const { puedeValidarHorometro } = req.body;
+
+    if (typeof puedeValidarHorometro !== "boolean") {
+      return res.status(400).json({ mensaje: "puedeValidarHorometro es obligatorio y debe ser true o false." });
+    }
+
+    const usuario = await User.findByPk(req.params.id);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado." });
+    }
+
+    // El permiso solo tiene sentido para administradores regulares: el
+    // super admin ya puede validar sin él, y no aplica a instructor/alumno.
+    if (usuario.rol !== "administrador" || usuario.esSuperAdmin) {
+      return res.status(400).json({
+        mensaje: "Este permiso solo se puede otorgar o revocar a administradores regulares (no a instructor, alumno, ni a otro super admin).",
+      });
+    }
+
+    usuario.puedeValidarHorometro = puedeValidarHorometro;
+    await usuario.save();
+
+    return res.json({
+      mensaje: puedeValidarHorometro
+        ? "Permiso de validación de horómetro otorgado correctamente."
+        : "Permiso de validación de horómetro revocado correctamente.",
+      usuario: {
+        id: usuario.id,
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        rol: usuario.rol,
+        puedeValidarHorometro: usuario.puedeValidarHorometro,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al actualizar el permiso de validación de horómetro." });
+  }
+}
+
+module.exports = { crearUsuario, buscarPorDpi, otorgarPermisoValidarHorometro };

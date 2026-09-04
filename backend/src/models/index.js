@@ -45,6 +45,11 @@ Vuelo.belongsTo(User, { foreignKey: "alumnoId", as: "alumno" });
 Vuelo.hasOne(LecturaHorometro, { foreignKey: "vueloId" });
 LecturaHorometro.belongsTo(Vuelo, { foreignKey: "vueloId" });
 
+// Paso 5: para que GET del horómetro pueda mostrar quién validó sin una
+// segunda consulta ("transparencia entre validadores").
+User.hasMany(LecturaHorometro, { foreignKey: "validadoPor", as: "horometrosValidados" });
+LecturaHorometro.belongsTo(User, { foreignKey: "validadoPor", as: "validador" });
+
 module.exports = {
   sequelize,
   User,
