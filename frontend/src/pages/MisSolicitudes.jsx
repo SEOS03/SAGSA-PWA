@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 import { ETIQUETAS_ESTADO } from "../components/TarjetaRecurso";
+import { marcarComoVistas } from "../utils/notificacionesSolicitudes";
 
 const ETIQUETAS_ACCION = {
   cambiar_estado: "Cambiar estado",
@@ -34,7 +34,7 @@ function describirDatos(solicitud) {
 }
 
 export default function MisSolicitudes() {
-  const { listarMisSolicitudes } = useAuth();
+  const { usuario, listarMisSolicitudes } = useAuth();
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -44,12 +44,15 @@ export default function MisSolicitudes() {
     try {
       const datos = await listarMisSolicitudes();
       setSolicitudes(datos.solicitudes);
+      // Al ver la lista, se marcan como vistas: el aviso "!" desaparece
+      // hasta que otra de tus solicitudes cambie de estado.
+      marcarComoVistas(usuario.id, datos.solicitudes);
     } catch (err) {
       setError(err.response?.data?.mensaje || "No se pudieron cargar tus solicitudes.");
     } finally {
       setCargando(false);
     }
-  }, [listarMisSolicitudes]);
+  }, [listarMisSolicitudes, usuario]);
 
   useEffect(() => {
     cargar();
@@ -92,9 +95,6 @@ export default function MisSolicitudes() {
             </div>
           )}
 
-          <p className="enlace-secundario">
-            <Link to="/panel/recursos">Volver a recursos</Link>
-          </p>
         </div>
       </div>
     </>

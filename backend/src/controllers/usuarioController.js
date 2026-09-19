@@ -4,6 +4,7 @@ const { generarPasswordTemporal } = require("../utils/generarPassword");
 const { enviarCorreoBienvenida } = require("../config/mailer");
 
 const DPI_REGEX = /^\d{13}$/;
+const ROLES_VALIDOS = ["administrador", "instructor", "alumno"];
 
 // POST /api/usuarios/crear (solo administradores)
 async function crearUsuario(req, res) {
@@ -93,8 +94,10 @@ async function buscarPorDpi(req, res) {
     return res.json({
       mensaje: "Usuario encontrado.",
       usuario: {
+        id: usuario.id,
         nombre: usuario.nombre,
         correo: usuario.correo,
+        rol: usuario.rol,
       },
     });
   } catch (error) {
@@ -146,4 +149,50 @@ async function otorgarPermisoValidarHorometro(req, res) {
   }
 }
 
-module.exports = { crearUsuario, buscarPorDpi, otorgarPermisoValidarHorometro };
+// GET /api/usuarios?rol=instructor (cualquier usuario autenticado, excepto
+// para rol=administrador que sigue siendo solo administradores).
+// Usado por el formulario de creación de vuelos para poblar los
+// selectores de instructor/alumno: un instructor necesita listar alumnos y
+// un alumno necesita listar instructores, no solo el administrador.
+async function listarUsuarios(req, res) {
+  try {
+    const { rol } = req.query;
+
+    if (!rol || !ROLES_VALIDOS.includes(rol)) {
+      return res.status(400).json({ mensaje: `rol es obligatorio y debe ser uno de: ${ROLES_VALIDOS.join(", ")}.` });
+    }
+
+    const rolSolicitante = req.usuario.rol;
+
+    // Un alumno solo puede listar instructores; un instructor solo puede
+    // listar alumnos. Administrador y super admin no tienen restricción.
+    if (rolSolicitante === "alumno" && rol !== "instructor") {
+      return res.status(403).json({ mensaje: "Un alumno solo puede consultar la lista de instructores." });
+    }
+
+    if (rolSolicitante === "instructor" && rol !== "alumno") {
+      return res.status(403).json({ mensaje: "Un instructor solo puede consultar la lista de alumnos." });
+    }
+
+    // Solo administrador/super admin reciben el correo (y, para poblar la
+    // pantalla de Permisos de Validación, esSuperAdmin/puedeValidarHorometro);
+    // cualquier otro rol consultante recibe estrictamente id y nombre.
+    const atributos =
+      rolSolicitante === "administrador"
+        ? ["id", "nombre", "correo", "esSuperAdmin", "puedeValidarHorometro"]
+        : ["id", "nombre"];
+
+    const usuarios = await User.findAll({
+      where: { rol, activo: true },
+      attributes: atributos,
+      order: [["nombre", "ASC"]],
+    });
+
+    return res.json({ mensaje: "Usuarios obtenidos correctamente.", usuarios });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al obtener los usuarios." });
+  }
+}
+
+module.exports = { crearUsuario, buscarPorDpi, otorgarPermisoValidarHorometro, listarUsuarios };

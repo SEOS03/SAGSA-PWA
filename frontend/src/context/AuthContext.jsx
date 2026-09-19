@@ -30,6 +30,11 @@ export function AuthProvider({ children }) {
     return respuesta.data;
   }
 
+  async function listarUsuariosPorRol(rol) {
+    const respuesta = await api.get("/usuarios", { params: { rol } });
+    return respuesta.data;
+  }
+
   async function solicitarRecuperacion(correo) {
     const respuesta = await api.post("/auth/solicitar-recuperacion", { correo });
     return respuesta.data;
@@ -126,6 +131,100 @@ export function AuthProvider({ children }) {
     return respuesta.data;
   }
 
+  // ---------- Módulo 3: Vuelos ----------
+
+  async function listarVuelos(filtros) {
+    const respuesta = await api.get("/vuelos", { params: filtros });
+    return respuesta.data;
+  }
+
+  async function obtenerVuelo(id) {
+    const respuesta = await api.get(`/vuelos/${id}`);
+    return respuesta.data;
+  }
+
+  async function crearVuelo(datos) {
+    const respuesta = await api.post("/vuelos", datos);
+    return respuesta.data;
+  }
+
+  async function cancelarVuelo(id, motivoCancelacion) {
+    const respuesta = await api.patch(`/vuelos/${id}/cancelar`, { motivoCancelacion });
+    return respuesta.data;
+  }
+
+  async function confirmarInstructor(id) {
+    const respuesta = await api.patch(`/vuelos/${id}/confirmar-instructor`);
+    return respuesta.data;
+  }
+
+  async function confirmarAlumno(id) {
+    const respuesta = await api.patch(`/vuelos/${id}/confirmar-alumno`);
+    return respuesta.data;
+  }
+
+  async function aprobarVueloSuperAdmin(id) {
+    const respuesta = await api.patch(`/vuelos/${id}/aprobar-superadmin`);
+    return respuesta.data;
+  }
+
+  async function registrarHorometroInstructor(id, datos) {
+    const respuesta = await api.post(`/vuelos/${id}/horometro-instructor`, datos);
+    return respuesta.data;
+  }
+
+  async function registrarHorometroAlumno(id, datos) {
+    const respuesta = await api.post(`/vuelos/${id}/horometro-alumno`, datos);
+    return respuesta.data;
+  }
+
+  async function obtenerHorometro(id) {
+    const respuesta = await api.get(`/vuelos/${id}/horometro`);
+    return respuesta.data;
+  }
+
+  async function listarHorometrosPendientesValidacion() {
+    const respuesta = await api.get("/vuelos/horometros/pendientes-validacion");
+    return respuesta.data;
+  }
+
+  async function validarHorometro(id) {
+    const respuesta = await api.put(`/vuelos/${id}/horometro/validar`);
+    return respuesta.data;
+  }
+
+  async function otorgarPermisoValidarHorometro(id, puedeValidarHorometro) {
+    const respuesta = await api.patch(`/usuarios/${id}/permiso-validar-horometro`, { puedeValidarHorometro });
+    return respuesta.data;
+  }
+
+  async function listarPrioridadAlumnos() {
+    const respuesta = await api.get("/alumnos/lista-prioridad");
+    return respuesta.data;
+  }
+
+  // ---------- Progreso de alumnos (inscripción a programas) ----------
+
+  async function listarProgramas() {
+    const respuesta = await api.get("/programas");
+    return respuesta.data;
+  }
+
+  async function inscribirAlumno(datos) {
+    const respuesta = await api.post("/progreso", datos);
+    return respuesta.data;
+  }
+
+  async function listarProgresoDeAlumno(alumnoId) {
+    const respuesta = await api.get("/progreso", { params: { alumnoId } });
+    return respuesta.data;
+  }
+
+  async function reasignarInstructorProgreso(id, instructorAsignadoId) {
+    const respuesta = await api.patch(`/progreso/${id}/instructor`, { instructorAsignadoId });
+    return respuesta.data;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -135,6 +234,7 @@ export function AuthProvider({ children }) {
         cambiarPassword,
         cerrarSesion,
         buscarUsuarioPorDpi,
+        listarUsuariosPorRol,
         solicitarRecuperacion,
         restablecerPassword,
         listarRecursos,
@@ -151,6 +251,24 @@ export function AuthProvider({ children }) {
         listarMisSolicitudes,
         aprobarSolicitud,
         rechazarSolicitud,
+        listarVuelos,
+        obtenerVuelo,
+        crearVuelo,
+        cancelarVuelo,
+        confirmarInstructor,
+        confirmarAlumno,
+        aprobarVueloSuperAdmin,
+        registrarHorometroInstructor,
+        registrarHorometroAlumno,
+        obtenerHorometro,
+        listarHorometrosPendientesValidacion,
+        validarHorometro,
+        otorgarPermisoValidarHorometro,
+        listarPrioridadAlumnos,
+        listarProgramas,
+        inscribirAlumno,
+        listarProgresoDeAlumno,
+        reasignarInstructorProgreso,
       }}
     >
       {children}

@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import RutaProtegida from "./components/RutaProtegida";
 import RutaSoloAdmin from "./components/RutaSoloAdmin";
 import RutaSoloSuperAdmin from "./components/RutaSoloSuperAdmin";
+import RutaValidadorHorometro from "./components/RutaValidadorHorometro";
 import Login from "./pages/Login";
 import CambiarPassword from "./pages/CambiarPassword";
 import CrearUsuario from "./pages/CrearUsuario";
@@ -14,6 +15,8 @@ import Recursos from "./pages/Recursos";
 import RecursoFormulario from "./pages/RecursoFormulario";
 import SolicitudesPendientes from "./pages/SolicitudesPendientes";
 import MisSolicitudes from "./pages/MisSolicitudes";
+import ValidarHorometro from "./pages/ValidarHorometro";
+import PermisosValidacion from "./pages/PermisosValidacion";
 import "./App.css";
 
 function App() {
@@ -95,6 +98,22 @@ function App() {
               <RutaSoloAdmin>
                 <MisSolicitudes />
               </RutaSoloAdmin>
+            }
+          />
+          <Route
+            path="/panel/validar-horometro"
+            element={
+              <RutaValidadorHorometro>
+                <ValidarHorometro />
+              </RutaValidadorHorometro>
+            }
+          />
+          <Route
+            path="/panel/permisos-validacion"
+            element={
+              <RutaSoloSuperAdmin>
+                <PermisosValidacion />
+              </RutaSoloSuperAdmin>
             }
           />
         </Routes>

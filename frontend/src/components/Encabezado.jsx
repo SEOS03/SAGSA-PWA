@@ -1,11 +1,15 @@
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import PanelLateral from "./PanelLateral";
+import IconoInicio from "./IconoInicio";
+import IconoNotificacionSolicitudes from "./IconoNotificacionSolicitudes";
 
 export default function Encabezado({ subtitulo }) {
   const { usuario } = useAuth();
 
   return (
     <header className="encabezado">
+      {usuario && <PanelLateral />}
+
       <div className="encabezado__marca">
         <img
           src="/branding/sagsa_logo.jpg"
@@ -22,9 +26,10 @@ export default function Encabezado({ subtitulo }) {
       </div>
 
       {usuario && (
-        <nav className="encabezado__nav">
-          <Link to="/panel/recursos">Recursos</Link>
-        </nav>
+        <div className="encabezado__acciones">
+          <IconoInicio />
+          <IconoNotificacionSolicitudes />
+        </div>
       )}
     </header>
   );

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 import { ETIQUETAS_ESTADO } from "../components/TarjetaRecurso";
+import { marcarComoVistas } from "../utils/notificacionesSolicitudes";
 
 const ETIQUETAS_ACCION = {
   cambiar_estado: "Cambiar estado",
@@ -28,7 +29,7 @@ function describirDatos(solicitud) {
 }
 
 export default function SolicitudesPendientes() {
-  const { listarSolicitudesPendientes, aprobarSolicitud, rechazarSolicitud } = useAuth();
+  const { usuario, listarSolicitudesPendientes, aprobarSolicitud, rechazarSolicitud } = useAuth();
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -40,12 +41,15 @@ export default function SolicitudesPendientes() {
     try {
       const datos = await listarSolicitudesPendientes();
       setSolicitudes(datos.solicitudes);
+      // Al ver la lista, se marcan como vistas: el aviso "!" desaparece
+      // hasta que aparezca una solicitud pendiente nueva.
+      marcarComoVistas(usuario.id, datos.solicitudes);
     } catch (err) {
       setError(err.response?.data?.mensaje || "No se pudieron cargar las solicitudes.");
     } finally {
       setCargando(false);
     }
-  }, [listarSolicitudesPendientes]);
+  }, [listarSolicitudesPendientes, usuario]);
 
   useEffect(() => {
     cargar();

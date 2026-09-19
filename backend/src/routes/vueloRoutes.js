@@ -13,12 +13,16 @@ const {
   registrarHorometroInstructor,
   registrarHorometroAlumno,
   obtenerHorometro,
+  listarPendientesValidacion,
   validarHorometro,
 } = require("../controllers/horometroController");
 const { verificarToken, verificarSuperAdmin } = require("../middleware/authMiddleware");
 
 router.post("/", verificarToken, crearVuelo);
 router.get("/", verificarToken, listarVuelos);
+// Debe registrarse antes de "/:id": de lo contrario Express interpreta
+// "horometros" como el parámetro :id de esa ruta.
+router.get("/horometros/pendientes-validacion", verificarToken, listarPendientesValidacion);
 router.get("/:id", verificarToken, obtenerVuelo);
 router.patch("/:id/cancelar", verificarToken, cancelarVuelo);
 router.patch("/:id/confirmar-instructor", verificarToken, confirmarInstructor);

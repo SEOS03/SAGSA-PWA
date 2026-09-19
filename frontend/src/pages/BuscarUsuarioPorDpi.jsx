@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
+import ModalInscribirPrograma from "../components/ModalInscribirPrograma";
 
 export default function BuscarUsuarioPorDpi() {
   const [dpi, setDpi] = useState("");
   const [resultado, setResultado] = useState(null);
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [mostrarInscripcion, setMostrarInscripcion] = useState(false);
 
   const { buscarUsuarioPorDpi } = useAuth();
 
@@ -69,11 +70,19 @@ export default function BuscarUsuarioPorDpi() {
             </button>
           </form>
 
-          <p className="enlace-secundario">
-            <Link to="/panel">Volver al panel</Link>
-          </p>
+          {resultado && resultado.rol === "alumno" && (
+            <div className="tarjeta-recurso__acciones-admin">
+              <button type="button" className="btn-chip btn-chip--secundario" onClick={() => setMostrarInscripcion(true)}>
+                Inscribir a programa
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {mostrarInscripcion && resultado && (
+        <ModalInscribirPrograma alumno={resultado} onCerrar={() => setMostrarInscripcion(false)} />
+      )}
     </>
   );
 }

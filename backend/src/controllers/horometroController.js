@@ -1,6 +1,13 @@
 const { sequelize, Vuelo, Recurso, User, LecturaHorometro, ProgresoAlumno, Programa } = require("../models");
+const actualizarEstadoPorHora = require("../utils/actualizarEstadoPorHora");
 
 const TOLERANCIA_HORAS = 0.1;
+
+// El reporte de horómetro se hace después del vuelo, así que para cuando
+// alguien lo reporta, fechaHora casi siempre ya pasó y el vuelo pudo haber
+// transicionado a "en_curso" automáticamente (ver actualizarEstadoPorHora) —
+// se acepta en ambos estados, no solo "confirmado".
+const ESTADOS_VUELO_PARA_HOROMETRO = ["confirmado", "en_curso"];
 
 const CAMPOS_POR_ROL = {
   instructor: { inicial: "horometroInicialInstructor", final: "horometroFinalInstructor" },
@@ -69,9 +76,9 @@ async function registrarHorometro(req, res, rolReporte) {
       });
     }
 
-    if (vuelo.estado !== "confirmado") {
+    if (!ESTADOS_VUELO_PARA_HOROMETRO.includes(vuelo.estado)) {
       return res.status(409).json({
-        mensaje: `El vuelo debe estar "confirmado" para registrar el horómetro (estado actual: "${vuelo.estado}").`,
+        mensaje: `El vuelo debe estar "confirmado" o "en_curso" para registrar el horómetro (estado actual: "${vuelo.estado}").`,
       });
     }
 
@@ -156,6 +163,78 @@ async function obtenerHorometro(req, res) {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener el registro de horómetro." });
+  }
+}
+
+// GET /api/vuelos/horometros/pendientes-validacion
+// (super admin siempre; administrador regular solo con puedeValidarHorometro)
+// Reemplaza el patrón anterior de listar vuelos "confirmado" y consultar el
+// horómetro de cada uno por separado: aquí se trae todo en una sola consulta,
+// desde LecturaHorometro con el Vuelo (y sus relaciones) incluido.
+async function listarPendientesValidacion(req, res) {
+  try {
+    const esSuperAdmin = !!req.usuario.esSuperAdmin;
+    let tienePermiso = esSuperAdmin;
+
+    if (!esSuperAdmin) {
+      // Igual que en validarHorometro: se relee de la base de datos, no del
+      // token, porque el permiso debe poder revocarse de inmediato.
+      const usuarioActual = await User.findByPk(req.usuario.id);
+      tienePermiso = !!usuarioActual?.puedeValidarHorometro;
+    }
+
+    if (!tienePermiso) {
+      return res
+        .status(403)
+        .json({ mensaje: "No tiene permisos para consultar los registros pendientes de validación." });
+    }
+
+    // No se filtra nada más por permiso: un administrador con el permiso ve
+    // exactamente los mismos registros que el super admin, discrepancias
+    // incluidas — el frontend decide si le muestra el botón de validar.
+    const registros = await LecturaHorometro.findAll({
+      where: { estado: "pendiente_validacion" },
+      include: [
+        {
+          model: Vuelo,
+          required: true,
+          include: [
+            { model: Recurso, as: "recurso", attributes: ["id", "matricula"] },
+            { model: User, as: "instructor", attributes: ["id", "nombre"] },
+            { model: User, as: "alumno", attributes: ["id", "nombre"] },
+          ],
+        },
+      ],
+      order: [[{ model: Vuelo }, "fechaHora", "ASC"]],
+    });
+
+    await Promise.all(registros.map((registro) => actualizarEstadoPorHora(registro.Vuelo)));
+
+    const pendientes = registros.map((registro) => ({
+      vueloId: registro.vueloId,
+      recurso: registro.Vuelo.recurso
+        ? { id: registro.Vuelo.recurso.id, matricula: registro.Vuelo.recurso.matricula }
+        : null,
+      instructor: registro.Vuelo.instructor
+        ? { id: registro.Vuelo.instructor.id, nombre: registro.Vuelo.instructor.nombre }
+        : null,
+      alumno: registro.Vuelo.alumno ? { id: registro.Vuelo.alumno.id, nombre: registro.Vuelo.alumno.nombre } : null,
+      fechaHora: registro.Vuelo.fechaHora,
+      horometroInicialSistema: registro.horometroInicialSistema,
+      horometroInicialInstructor: registro.horometroInicialInstructor,
+      horometroFinalInstructor: registro.horometroFinalInstructor,
+      horometroInicialAlumno: registro.horometroInicialAlumno,
+      horometroFinalAlumno: registro.horometroFinalAlumno,
+      horasSesionReportadas: registro.horasSesionReportadas,
+      observaciones: registro.observaciones,
+      coincidenciaHorometroInicial: registro.coincidenciaHorometroInicial,
+      coherenciaHorometroFinal: registro.coherenciaHorometroFinal,
+    }));
+
+    return res.json({ mensaje: "Registros pendientes de validación obtenidos correctamente.", pendientes });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ mensaje: "Error al obtener los registros pendientes de validación." });
   }
 }
 
@@ -291,5 +370,6 @@ module.exports = {
   registrarHorometroInstructor,
   registrarHorometroAlumno,
   obtenerHorometro,
+  listarPendientesValidacion,
   validarHorometro,
 };

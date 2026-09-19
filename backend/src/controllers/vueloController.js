@@ -2,6 +2,17 @@ const { Op, Sequelize } = require("sequelize");
 const { sequelize, Vuelo, Recurso, User, ProgresoAlumno, Programa } = require("../models");
 const calcularPrioridad = require("../utils/calcularPrioridad");
 const { serializarVuelo, serializarVuelos } = require("../utils/serializarVuelo");
+const actualizarEstadoPorHora = require("../utils/actualizarEstadoPorHora");
+
+// Datos anidados que necesita el frontend para mostrar un vuelo sin hacer
+// lookups adicionales (calendario semanal, Paso 6a). Se restringen los
+// attributes de cada include para no exponer más de la cuenta (ej. nunca
+// el password del instructor/alumno).
+const INCLUDE_DATOS_VUELO = [
+  { model: Recurso, as: "recurso", attributes: ["id", "matricula", "tipoRecurso"] },
+  { model: User, as: "instructor", attributes: ["id", "nombre"] },
+  { model: User, as: "alumno", attributes: ["id", "nombre"] },
+];
 
 const MOTIVOS_CANCELACION = [
   "cancelado_por_alumno",
@@ -177,7 +188,13 @@ async function listarVuelos(req, res) {
       if (hasta) filtro.fechaHora[Op.lte] = new Date(hasta);
     }
 
-    const vuelos = await Vuelo.findAll({ where: filtro, order: [["fechaHora", "ASC"]] });
+    const vuelos = await Vuelo.findAll({
+      where: filtro,
+      include: INCLUDE_DATOS_VUELO,
+      order: [["fechaHora", "ASC"]],
+    });
+    await Promise.all(vuelos.map((vuelo) => actualizarEstadoPorHora(vuelo)));
+
     return res.json({
       mensaje: "Vuelos obtenidos correctamente.",
       vuelos: serializarVuelos(vuelos, req.usuario),
@@ -191,10 +208,12 @@ async function listarVuelos(req, res) {
 // GET /api/vuelos/:id (cualquier rol autenticado)
 async function obtenerVuelo(req, res) {
   try {
-    const vuelo = await Vuelo.findByPk(req.params.id);
+    const vuelo = await Vuelo.findByPk(req.params.id, { include: INCLUDE_DATOS_VUELO });
     if (!vuelo) {
       return res.status(404).json({ mensaje: "Vuelo no encontrado." });
     }
+    await actualizarEstadoPorHora(vuelo);
+
     return res.json({
       mensaje: "Vuelo obtenido correctamente.",
       vuelo: serializarVuelo(vuelo, req.usuario),

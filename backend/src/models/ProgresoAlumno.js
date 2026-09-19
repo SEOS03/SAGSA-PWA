@@ -18,6 +18,12 @@ const ProgresoAlumno = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    // Puede quedar sin asignar al inscribir; se asigna o reasigna después
+    // sin ninguna restricción ni historial.
+    instructorAsignadoId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     leccionActual: {
       type: DataTypes.INTEGER,
       allowNull: false,

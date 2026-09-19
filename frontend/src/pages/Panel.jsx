@@ -1,10 +1,12 @@
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Encabezado from "../components/Encabezado";
+import CalendarioSemanal from "../components/CalendarioSemanal";
 
 export default function Panel() {
   const { usuario, cerrarSesion } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   function manejarSalida() {
     cerrarSesion();
@@ -15,28 +17,18 @@ export default function Panel() {
     <>
       <Encabezado subtitulo="Panel principal" />
       <div className="pagina">
-        <div className="contenedor-panel">
-          <h1>Bienvenido, {usuario?.nombre}</h1>
-          <p>
-            Rol: <strong>{usuario?.rol}</strong>
-          </p>
+        <div className="contenedor-ancho">
+          <div className="panel-cabecera">
+            <div>
+              <h1>Bienvenido, {usuario?.nombre}</h1>
+              <p className="subtitulo">Rol: {usuario?.rol}</p>
+            </div>
+            <button type="button" className="btn-chip btn-chip--secundario" onClick={manejarSalida}>
+              Cerrar sesión
+            </button>
+          </div>
 
-          {usuario?.rol === "administrador" && (
-            <>
-              <p className="enlace-secundario">
-                <Link to="/panel/crear-usuario">Crear usuario</Link>
-              </p>
-              <p className="enlace-secundario">
-                <Link to="/panel/buscar-usuario">Buscar usuario por DPI</Link>
-              </p>
-            </>
-          )}
-
-          <p className="nota">
-            Este panel es un punto de partida. Los módulos de aeronaves, programación de vuelos y
-            reportes se irán agregando aquí en los siguientes sprints.
-          </p>
-          <button onClick={manejarSalida}>Cerrar sesión</button>
+          <CalendarioSemanal mensajeGuiaTrigger={location.state?.mensajeGuiaVuelo} />
         </div>
       </div>
     </>

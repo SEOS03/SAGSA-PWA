@@ -33,8 +33,11 @@ ProgresoAlumno.belongsTo(Programa, { foreignKey: "programaId" });
 User.hasMany(ProgresoAlumno, { foreignKey: "alumnoId", as: "progresos" });
 ProgresoAlumno.belongsTo(User, { foreignKey: "alumnoId", as: "alumno" });
 
+User.hasMany(ProgresoAlumno, { foreignKey: "instructorAsignadoId", as: "progresosComoInstructor" });
+ProgresoAlumno.belongsTo(User, { foreignKey: "instructorAsignadoId", as: "instructorAsignado" });
+
 Recurso.hasMany(Vuelo, { foreignKey: "recursoId" });
-Vuelo.belongsTo(Recurso, { foreignKey: "recursoId" });
+Vuelo.belongsTo(Recurso, { foreignKey: "recursoId", as: "recurso" });
 
 User.hasMany(Vuelo, { foreignKey: "instructorId", as: "vuelosComoInstructor" });
 Vuelo.belongsTo(User, { foreignKey: "instructorId", as: "instructor" });

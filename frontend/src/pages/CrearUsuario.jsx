@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 
@@ -111,10 +110,6 @@ export default function CrearUsuario() {
               {cargando ? "Creando..." : "Crear usuario"}
             </button>
           </form>
-
-          <p className="enlace-secundario">
-            <Link to="/panel">Volver al panel</Link>
-          </p>
         </div>
       </div>
     </>

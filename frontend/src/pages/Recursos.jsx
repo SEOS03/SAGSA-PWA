@@ -84,16 +84,6 @@ export default function Recursos() {
                 <Link className="btn-chip btn-chip--secundario" to="/panel/recursos/nuevo">
                   + Nuevo recurso
                 </Link>
-                <Link className="btn-chip btn-chip--secundario" to="/panel/solicitudes">
-                  Solicitudes pendientes
-                </Link>
-              </div>
-            )}
-            {usuario?.rol === "administrador" && !usuario?.esSuperAdmin && (
-              <div className="encabezado-seccion__enlaces">
-                <Link className="btn-chip btn-chip--secundario" to="/panel/mis-solicitudes">
-                  Mis solicitudes
-                </Link>
               </div>
             )}
           </div>
@@ -132,10 +122,6 @@ export default function Recursos() {
               ))}
             </div>
           )}
-
-          <p className="enlace-secundario">
-            <Link to="/panel">Volver al panel</Link>
-          </p>
         </div>
       </div>
 

@@ -60,7 +60,7 @@ const LecturaHorometro = sequelize.define(
     // original del Paso 1) y se hubiera podido validar antes de tiempo,
     // con campos del segundo actor todavía en null.
     estado: {
-      type: DataTypes.ENUM("en_progreso", "pendiente_validacion", "validado", "en_disputa"),
+      type: DataTypes.ENUM("en_progreso", "pendiente_validacion", "validado"),
       allowNull: false,
       defaultValue: "en_progreso",
     },

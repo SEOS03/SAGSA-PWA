@@ -43,6 +43,7 @@ async function iniciarSesion(req, res) {
         rol: usuario.rol,
         esSuperAdmin: usuario.esSuperAdmin,
         debeCambiarPassword: usuario.debeCambiarPassword,
+        puedeValidarHorometro: usuario.puedeValidarHorometro,
       },
     });
   } catch (error) {
@@ -54,7 +55,7 @@ async function iniciarSesion(req, res) {
 // GET /api/auth/perfil (ruta protegida, de prueba)
 async function obtenerPerfil(req, res) {
   const usuario = await User.findByPk(req.usuario.id, {
-    attributes: ["id", "nombre", "correo", "rol", "activo", "debeCambiarPassword", "esSuperAdmin"],
+    attributes: ["id", "nombre", "correo", "rol", "activo", "debeCambiarPassword", "esSuperAdmin", "puedeValidarHorometro"],
   });
   return res.json({ usuario });
 }
