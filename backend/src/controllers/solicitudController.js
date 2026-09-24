@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const { Recurso, Mantenimiento, SolicitudCambio, User } = require("../models");
 const { validarDatosAccion, aplicarAccion } = require("../utils/accionesRecurso");
 
@@ -7,12 +8,37 @@ const INCLUDES_SOLICITUD = [
   { model: User, as: "revisor", attributes: ["id", "nombre", "correo"] },
 ];
 
-// GET /api/solicitudes?estado=pendiente (solo super admin)
+// GET /api/solicitudes?estado=pendiente (admite varios estados separados por
+// coma, ej. ?estado=aprobada,rechazada, usado por el historial).
+// El alcance de los resultados depende del rol de quien consulta:
+//  - super admin: todas las solicitudes, sin filtro adicional.
+//  - administrador regular: solo las que él mismo solicitó.
+//  - instructor: las 4 tipoAccion existentes (cambiar_estado,
+//    registrar_mantenimiento, finalizar_mantenimiento, actualizar_horas) son
+//    todas sobre Recurso/Mantenimiento y solo las genera un administrador —
+//    un instructor nunca tiene solicitudes propias, así que ve una lista
+//    vacía (no es un error ni un caso pendiente de implementar).
+//  - alumno: sin acceso.
 async function listarSolicitudes(req, res) {
   try {
+    if (req.usuario.rol === "alumno") {
+      return res.status(403).json({ mensaje: "No tienes permiso para ver solicitudes." });
+    }
+
     const { estado } = req.query;
     const filtro = {};
-    if (estado) filtro.estado = estado;
+    if (estado) {
+      const estados = estado.split(",");
+      filtro.estado = estados.length > 1 ? { [Op.in]: estados } : estados[0];
+    }
+
+    if (req.usuario.rol === "instructor") {
+      return res.json({ mensaje: "Solicitudes obtenidas correctamente.", solicitudes: [] });
+    }
+
+    if (!req.usuario.esSuperAdmin) {
+      filtro.solicitadoPor = req.usuario.id;
+    }
 
     const solicitudes = await SolicitudCambio.findAll({
       where: filtro,
@@ -24,22 +50,6 @@ async function listarSolicitudes(req, res) {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener las solicitudes." });
-  }
-}
-
-// GET /api/solicitudes/mias (administrador: ve solo sus propias solicitudes)
-async function listarMisSolicitudes(req, res) {
-  try {
-    const solicitudes = await SolicitudCambio.findAll({
-      where: { solicitadoPor: req.usuario.id },
-      include: [{ model: Recurso }],
-      order: [["fechaSolicitud", "DESC"]],
-    });
-
-    return res.json({ mensaje: "Solicitudes obtenidas correctamente.", solicitudes });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ mensaje: "Error al obtener tus solicitudes." });
   }
 }
 
@@ -119,4 +129,4 @@ async function rechazarSolicitud(req, res) {
   }
 }
 
-module.exports = { listarSolicitudes, listarMisSolicitudes, aprobarSolicitud, rechazarSolicitud };
+module.exports = { listarSolicitudes, aprobarSolicitud, rechazarSolicitud };

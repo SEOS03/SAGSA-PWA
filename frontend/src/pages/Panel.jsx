@@ -1,12 +1,11 @@
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Encabezado from "../components/Encabezado";
 import CalendarioSemanal from "../components/CalendarioSemanal";
 
 export default function Panel() {
   const { usuario, cerrarSesion } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   function manejarSalida() {
     cerrarSesion();
@@ -28,7 +27,7 @@ export default function Panel() {
             </button>
           </div>
 
-          <CalendarioSemanal mensajeGuiaTrigger={location.state?.mensajeGuiaVuelo} />
+          <CalendarioSemanal />
         </div>
       </div>
     </>

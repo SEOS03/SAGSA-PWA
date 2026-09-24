@@ -156,23 +156,6 @@
   padding-left: 15px;
 }
 
-.panel-lateral__enlace--boton {
-  all: unset;
-  box-sizing: border-box;
-  display: block;
-  width: 100%;
-  cursor: pointer;
-  padding: 14px 18px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--texto);
-  border-bottom: 1px solid var(--borde);
-}
-
-.panel-lateral__enlace--boton:hover {
-  background: var(--bg);
-}
-
 .panel-lateral__salir {
   margin-top: auto;
   padding: 14px 18px;
@@ -459,6 +442,24 @@
   text-align: left;
 }
 
+.tarjeta-recurso--boton {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--sagsa-dorado);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-suave);
+  padding: 16px;
+}
+
+.tarjeta-recurso--boton:hover {
+  background: var(--bg);
+}
+
 .tarjeta-recurso__cabecera {
   display: flex;
   align-items: center;
@@ -572,6 +573,33 @@
 .estado-badge--solicitud-aprobada {
   color: var(--exito);
   background: var(--exito-bg);
+}
+
+/* Estados de Vuelo (Reportes de vuelos) — mismos tokens que .vuelo-bloque--*
+   / .calendario-punto--* del calendario, para consistencia visual. */
+.estado-badge--en_proceso {
+  color: var(--advertencia);
+  background: var(--advertencia-bg);
+}
+
+.estado-badge--confirmado {
+  color: var(--exito);
+  background: var(--exito-bg);
+}
+
+.estado-badge--en_curso {
+  color: var(--activo);
+  background: var(--activo-bg);
+}
+
+.estado-badge--finalizado {
+  color: var(--info);
+  background: var(--info-bg);
+}
+
+.estado-badge--cancelado {
+  color: var(--error);
+  background: var(--error-bg);
 }
 
 /* ---------- Botones pequeños de acción ---------- */
@@ -816,6 +844,24 @@
   border: 2px solid var(--sagsa-negro);
 }
 
+.notificaciones-seccion {
+  padding: 12px 0;
+  border-top: 1px dashed var(--borde);
+}
+
+.notificaciones-seccion:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+.notificaciones-seccion h3 {
+  margin-bottom: 4px;
+}
+
+.notificaciones-seccion .tarjeta-recurso__acciones-admin {
+  justify-content: center;
+}
+
 /* ---------- Calendario semanal (Módulo de Vuelos) ---------- */
 .calendario-navegacion {
   display: flex;
@@ -834,36 +880,21 @@
   flex: 1;
 }
 
-.calendario-filtros {
+.calendario-controles {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  align-items: center;
+  gap: 10px;
   margin: 4px 0 16px;
-  padding: 10px 12px;
-  background: var(--superficie);
+}
+
+.calendario-selector-recurso {
+  padding: 9px 10px;
   border: 1px solid var(--borde);
   border-radius: var(--radio-chico);
-}
-
-.calendario-filtro-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  background: var(--superficie);
   color: var(--texto);
-  cursor: pointer;
-}
-
-.calendario-filtro-item input {
-  width: 15px;
-  height: 15px;
-  accent-color: var(--sagsa-dorado);
-}
-
-.calendario-filtro-item--todos {
-  font-weight: 700;
-  padding-right: 12px;
-  border-right: 1px solid var(--borde);
+  font-size: 0.88rem;
 }
 
 .calendario-scroll {
@@ -938,6 +969,10 @@
   background-position: 0 -1px;
 }
 
+.calendario-dia--pasado {
+  opacity: 0.55;
+}
+
 .calendario-bloque-hover {
   position: absolute;
   left: 2px;
@@ -1002,6 +1037,12 @@
   border-color: rgba(46, 125, 70, 0.35);
 }
 
+.vuelo-bloque--en_curso {
+  background: var(--activo-bg);
+  color: var(--activo);
+  border-color: rgba(106, 76, 156, 0.35);
+}
+
 .vuelo-bloque--finalizado {
   background: var(--info-bg);
   color: var(--info);
@@ -1048,6 +1089,10 @@
 
 .calendario-punto--confirmado {
   background: var(--exito);
+}
+
+.calendario-punto--en_curso {
+  background: var(--activo);
 }
 
 .calendario-punto--finalizado {
@@ -1148,4 +1193,101 @@
 .horometro-resumen p {
   font-size: 0.88rem;
   margin-bottom: 6px;
+}
+
+/* ---------- Reportes de vuelos (Sprint 4) ---------- */
+.reporte-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.reporte-filtros__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.reporte-filtros__campo label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--texto-secundario);
+}
+
+.reporte-filtros__campo select,
+.reporte-filtros__campo input {
+  padding: 9px 10px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 0.88rem;
+}
+
+.reporte-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 16px 0 8px;
+}
+
+.reporte-resumen__tarjeta {
+  background: var(--superficie);
+  border-top: 4px solid var(--sagsa-dorado);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-suave);
+  padding: 14px 12px;
+  text-align: center;
+}
+
+.reporte-resumen__numero {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.reporte-resumen__etiqueta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: var(--texto-secundario);
+}
+
+.reporte-tabla-contenedor {
+  overflow-x: auto;
+  margin-top: 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+}
+
+.reporte-tabla {
+  border-collapse: collapse;
+  min-width: 1900px;
+  font-size: 0.82rem;
+}
+
+.reporte-tabla th,
+.reporte-tabla td {
+  padding: 8px 10px;
+  white-space: nowrap;
+  text-align: left;
+  border-bottom: 1px solid var(--borde);
+}
+
+.reporte-tabla th {
+  position: sticky;
+  top: 0;
+  background: var(--superficie);
+  font-weight: 700;
+  color: var(--texto-secundario);
+  font-size: 0.75rem;
+}
+
+.reporte-tabla tbody tr:hover {
+  background: var(--bg);
 }

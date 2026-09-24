@@ -9,6 +9,7 @@ const vueloRoutes = require("./routes/vueloRoutes");
 const alumnoRoutes = require("./routes/alumnoRoutes");
 const progresoRoutes = require("./routes/progresoRoutes");
 const programaRoutes = require("./routes/programaRoutes");
+const reporteRoutes = require("./routes/reporteRoutes");
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/vuelos", vueloRoutes);
 app.use("/api/alumnos", alumnoRoutes);
 app.use("/api/progreso", progresoRoutes);
 app.use("/api/programas", programaRoutes);
+app.use("/api/reportes", reporteRoutes);
 
 // Manejo de rutas no encontradas
 app.use((req, res) => {

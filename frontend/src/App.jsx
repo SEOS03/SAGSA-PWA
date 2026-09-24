@@ -4,6 +4,7 @@ import RutaProtegida from "./components/RutaProtegida";
 import RutaSoloAdmin from "./components/RutaSoloAdmin";
 import RutaSoloSuperAdmin from "./components/RutaSoloSuperAdmin";
 import RutaValidadorHorometro from "./components/RutaValidadorHorometro";
+import RutaHistorialSolicitudes from "./components/RutaHistorialSolicitudes";
 import Login from "./pages/Login";
 import CambiarPassword from "./pages/CambiarPassword";
 import CrearUsuario from "./pages/CrearUsuario";
@@ -14,9 +15,10 @@ import Panel from "./pages/Panel";
 import Recursos from "./pages/Recursos";
 import RecursoFormulario from "./pages/RecursoFormulario";
 import SolicitudesPendientes from "./pages/SolicitudesPendientes";
-import MisSolicitudes from "./pages/MisSolicitudes";
+import HistorialSolicitudes from "./pages/HistorialSolicitudes";
 import ValidarHorometro from "./pages/ValidarHorometro";
 import PermisosValidacion from "./pages/PermisosValidacion";
+import ReportesVuelos from "./pages/ReportesVuelos";
 import "./App.css";
 
 function App() {
@@ -93,11 +95,11 @@ function App() {
             }
           />
           <Route
-            path="/panel/mis-solicitudes"
+            path="/panel/historial-solicitudes"
             element={
-              <RutaSoloAdmin>
-                <MisSolicitudes />
-              </RutaSoloAdmin>
+              <RutaHistorialSolicitudes>
+                <HistorialSolicitudes />
+              </RutaHistorialSolicitudes>
             }
           />
           <Route
@@ -114,6 +116,14 @@ function App() {
               <RutaSoloSuperAdmin>
                 <PermisosValidacion />
               </RutaSoloSuperAdmin>
+            }
+          />
+          <Route
+            path="/panel/reportes-vuelos"
+            element={
+              <RutaSoloAdmin>
+                <ReportesVuelos />
+              </RutaSoloAdmin>
             }
           />
         </Routes>

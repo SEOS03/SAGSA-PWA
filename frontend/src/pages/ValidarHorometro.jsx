@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 import TarjetaValidacionHorometro from "../components/TarjetaValidacionHorometro";
@@ -75,10 +74,6 @@ export default function ValidarHorometro() {
               ))}
             </div>
           )}
-
-          <p className="enlace-secundario">
-            <Link to="/panel">Volver al panel</Link>
-          </p>
         </div>
       </div>
     </>

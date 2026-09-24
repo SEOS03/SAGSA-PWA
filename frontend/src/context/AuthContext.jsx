@@ -116,8 +116,8 @@ export function AuthProvider({ children }) {
     return respuesta.data;
   }
 
-  async function listarMisSolicitudes() {
-    const respuesta = await api.get("/solicitudes/mias");
+  async function listarHistorialSolicitudes() {
+    const respuesta = await api.get("/solicitudes", { params: { estado: "aprobada,rechazada" } });
     return respuesta.data;
   }
 
@@ -225,6 +225,13 @@ export function AuthProvider({ children }) {
     return respuesta.data;
   }
 
+  // ---------- Sprint 4: Reportes ----------
+
+  async function listarReporteVuelos(filtros) {
+    const respuesta = await api.get("/reportes/vuelos", { params: filtros });
+    return respuesta.data;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -248,7 +255,7 @@ export function AuthProvider({ children }) {
         listarMantenimientos,
         finalizarMantenimiento,
         listarSolicitudesPendientes,
-        listarMisSolicitudes,
+        listarHistorialSolicitudes,
         aprobarSolicitud,
         rechazarSolicitud,
         listarVuelos,
@@ -269,6 +276,7 @@ export function AuthProvider({ children }) {
         inscribirAlumno,
         listarProgresoDeAlumno,
         reasignarInstructorProgreso,
+        listarReporteVuelos,
       }}
     >
       {children}

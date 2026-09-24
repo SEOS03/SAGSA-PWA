@@ -12,7 +12,6 @@ const ETIQUETAS_ACCION = {
 };
 
 const ETIQUETAS_ESTADO_SOLICITUD = {
-  pendiente: "Pendiente",
   aprobada: "Aprobada",
   rechazada: "Rechazada",
 };
@@ -33,8 +32,12 @@ function describirDatos(solicitud) {
   }
 }
 
-export default function MisSolicitudes() {
-  const { usuario, listarMisSolicitudes } = useAuth();
+// Reemplaza a la antigua "Mis solicitudes": ahora es un historial (solo
+// solicitudes ya resueltas) cuyo alcance depende del rol de quien lo ve —
+// el filtrado real ocurre en el backend (GET /api/solicitudes), este
+// componente solo muestra lo que recibe.
+export default function HistorialSolicitudes() {
+  const { usuario, listarHistorialSolicitudes } = useAuth();
   const [solicitudes, setSolicitudes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -42,17 +45,15 @@ export default function MisSolicitudes() {
   const cargar = useCallback(async () => {
     setError("");
     try {
-      const datos = await listarMisSolicitudes();
+      const datos = await listarHistorialSolicitudes();
       setSolicitudes(datos.solicitudes);
-      // Al ver la lista, se marcan como vistas: el aviso "!" desaparece
-      // hasta que otra de tus solicitudes cambie de estado.
-      marcarComoVistas(usuario.id, datos.solicitudes);
+      marcarComoVistas(usuario.id, datos.solicitudes, "solicitudes");
     } catch (err) {
-      setError(err.response?.data?.mensaje || "No se pudieron cargar tus solicitudes.");
+      setError(err.response?.data?.mensaje || "No se pudo cargar el historial de solicitudes.");
     } finally {
       setCargando(false);
     }
-  }, [listarMisSolicitudes, usuario]);
+  }, [listarHistorialSolicitudes, usuario]);
 
   useEffect(() => {
     cargar();
@@ -60,18 +61,18 @@ export default function MisSolicitudes() {
 
   return (
     <>
-      <Encabezado subtitulo="Mis solicitudes" />
+      <Encabezado subtitulo="Historial de solicitudes" />
       <div className="pagina">
         <div className="contenedor-ancho">
-          <h1>Mis solicitudes</h1>
-          <p className="subtitulo">Estado de los cambios que has propuesto sobre los recursos.</p>
+          <h1>Historial de solicitudes</h1>
+          <p className="subtitulo">Solicitudes ya resueltas (aprobadas o rechazadas).</p>
 
           {error && <p className="mensaje-error">{error}</p>}
 
           {cargando ? (
-            <p className="subtitulo">Cargando solicitudes...</p>
+            <p className="subtitulo">Cargando historial...</p>
           ) : solicitudes.length === 0 ? (
-            <p className="subtitulo">Todavía no has enviado ninguna solicitud.</p>
+            <p className="subtitulo">Todavía no hay solicitudes resueltas.</p>
           ) : (
             <div className="lista-recursos">
               {solicitudes.map((solicitud) => (
@@ -86,7 +87,14 @@ export default function MisSolicitudes() {
                   </div>
                   <p className="tarjeta-recurso__modelo">{ETIQUETAS_ACCION[solicitud.tipoAccion]}</p>
                   <p className="subtitulo">{describirDatos(solicitud)}</p>
-                  <p className="subtitulo">{new Date(solicitud.fechaSolicitud).toLocaleString()}</p>
+                  <p className="subtitulo">
+                    Solicitado por: <strong>{solicitud.solicitante?.nombre || "—"}</strong>
+                    {" · "}
+                    {new Date(solicitud.fechaSolicitud).toLocaleString()}
+                  </p>
+                  <p className="subtitulo">
+                    Revisado por: <strong>{solicitud.revisor?.nombre || "—"}</strong>
+                  </p>
                   {solicitud.estado === "rechazada" && solicitud.motivoRechazo && (
                     <p className="mensaje-error">Motivo: {solicitud.motivoRechazo}</p>
                   )}
@@ -94,7 +102,6 @@ export default function MisSolicitudes() {
               ))}
             </div>
           )}
-
         </div>
       </div>
     </>

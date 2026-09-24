@@ -45,6 +45,11 @@ Vuelo.belongsTo(User, { foreignKey: "instructorId", as: "instructor" });
 User.hasMany(Vuelo, { foreignKey: "alumnoId", as: "vuelosComoAlumno" });
 Vuelo.belongsTo(User, { foreignKey: "alumnoId", as: "alumno" });
 
+// Sprint 4 — Reportes: para resolver "cancelado por" a {id, nombre} sin una
+// segunda consulta.
+User.hasMany(Vuelo, { foreignKey: "canceladoPor", as: "vuelosCancelados" });
+Vuelo.belongsTo(User, { foreignKey: "canceladoPor", as: "canceladoPorUsuario" });
+
 Vuelo.hasOne(LecturaHorometro, { foreignKey: "vueloId" });
 LecturaHorometro.belongsTo(Vuelo, { foreignKey: "vueloId" });
 

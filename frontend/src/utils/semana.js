@@ -27,6 +27,14 @@ export function mismoDia(fechaA, fechaB) {
   );
 }
 
+export function esFechaPasada(fecha) {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const comparar = new Date(fecha);
+  comparar.setHours(0, 0, 0, 0);
+  return comparar < hoy;
+}
+
 export function formatoDiaCorto(fecha) {
   const texto = new Intl.DateTimeFormat("es-GT", { weekday: "short", day: "numeric" }).format(fecha);
   return texto.charAt(0).toUpperCase() + texto.slice(1);

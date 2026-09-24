@@ -2,7 +2,16 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import ModalDetalleVuelo from "./ModalDetalleVuelo";
 import ModalFormularioVuelo from "./ModalFormularioVuelo";
-import { obtenerLunes, sumarDias, obtenerDiasSemana, mismoDia, formatoDiaCorto, formatoRangoSemana } from "../utils/semana";
+import ModalMisActividades from "./ModalMisActividades";
+import {
+  obtenerLunes,
+  sumarDias,
+  obtenerDiasSemana,
+  mismoDia,
+  formatoDiaCorto,
+  formatoRangoSemana,
+  esFechaPasada,
+} from "../utils/semana";
 
 const PESTANAS = [
   { valor: "aeronaves", etiqueta: "Aeronaves" },
@@ -88,34 +97,23 @@ const ETIQUETAS_ESTADO_VUELO = {
   cancelado: "Cancelado",
 };
 
-const MENSAJE_GUIA_VUELO = "Selecciona un espacio vacío en el calendario para agendar un vuelo.";
-
-export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
+export default function CalendarioSemanal() {
   const { usuario, listarRecursos, listarVuelos } = useAuth();
 
   const [lunes, setLunes] = useState(() => obtenerLunes(new Date()));
   const [pestana, setPestana] = useState("aeronaves");
   const [recursos, setRecursos] = useState([]);
-  const [seleccionados, setSeleccionados] = useState(() => new Set());
+  const [recursoFiltroId, setRecursoFiltroId] = useState("");
   const [vuelos, setVuelos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
-  const [mensajeGuia, setMensajeGuia] = useState("");
   const [vueloSeleccionado, setVueloSeleccionado] = useState(null);
   const [bloqueHover, setBloqueHover] = useState(null); // { dia, indice }
   const [formularioAbierto, setFormularioAbierto] = useState(null); // null | { fecha, horaInicio, recursoId, tipoRecurso }
+  const [misActividadesAbierto, setMisActividadesAbierto] = useState(false);
 
-  // El enlace "Programar vuelo" del menú lateral ya no abre el panel
-  // flotante directamente (ver ModalFormularioVuelo): solo trae al usuario
-  // aquí y muestra este aviso temporal, con un valor nuevo en cada clic
-  // (ver PanelLateral) para que el efecto dispare aunque ya estés en /panel.
-  useEffect(() => {
-    if (!mensajeGuiaTrigger) return;
-    setMensajeGuia(MENSAJE_GUIA_VUELO);
-    const temporizador = setTimeout(() => setMensajeGuia(""), 6000);
-    return () => clearTimeout(temporizador);
-  }, [mensajeGuiaTrigger]);
+  const esAdmin = usuario?.rol === "administrador";
 
   const diasSemana = useMemo(() => obtenerDiasSemana(lunes), [lunes]);
 
@@ -135,10 +133,10 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
     [recursos, pestana]
   );
 
-  // Al cambiar de pestaña (o al llegar los recursos), todos quedan
-  // seleccionados por defecto para esa categoría.
+  // Al cambiar de pestaña, el filtro de recurso vuelve a "Todos los
+  // recursos" (un recursoId de la pestaña anterior no aplicaría aquí).
   useEffect(() => {
-    setSeleccionados(new Set(recursosFiltrados.map((r) => r.id)));
+    setRecursoFiltroId("");
   }, [recursosFiltrados]);
 
   const cargarVuelos = useCallback(async () => {
@@ -167,8 +165,11 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
   }
 
   const vuelosVisibles = useMemo(
-    () => vuelos.filter((v) => esDeTipo(v, pestana) && seleccionados.has(Number(v.recursoId))),
-    [vuelos, pestana, seleccionados]
+    () =>
+      vuelos.filter(
+        (v) => esDeTipo(v, pestana) && (!recursoFiltroId || Number(v.recursoId) === Number(recursoFiltroId))
+      ),
+    [vuelos, pestana, recursoFiltroId]
   );
 
   function vuelosDelDia(dia) {
@@ -176,15 +177,17 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
   }
 
   // Un bloque de 2 horas se considera disponible para crear un vuelo si, de
-  // los recursos actualmente visibles en el filtro, al menos uno no tiene
+  // los recursos actualmente visibles en el filtro (uno solo, si hay
+  // recursoFiltroId; todos los de la pestaña, si no), al menos uno no tiene
   // ningún vuelo que se cruce con ese rango (aunque sea parcialmente).
   function bloqueDisponibleParaAlgunRecurso(dia, indice) {
     const [horaInicioBloque, horaFinBloque] = rangoBloque(indice);
     const inicioMs = new Date(dia).setHours(horaInicioBloque, 0, 0, 0);
     const finMs = new Date(dia).setHours(horaFinBloque, 0, 0, 0);
     const vuelosDia = vuelosDelDia(dia);
+    const recursosAConsiderar = recursoFiltroId ? [recursoFiltroId] : recursosFiltrados.map((r) => r.id);
 
-    return Array.from(seleccionados).some((recursoId) => {
+    return recursosAConsiderar.some((recursoId) => {
       const ocupado = vuelosDia.some((v) => {
         if (Number(v.recursoId) !== Number(recursoId)) return false;
         const [vIni, vFin] = rangoMs(v);
@@ -206,25 +209,24 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
 
     if (bloqueDisponibleParaAlgunRecurso(dia, indice)) {
       const [horaInicioBloque] = rangoBloque(indice);
-      const recursoUnico = seleccionados.size === 1 ? Array.from(seleccionados)[0] : null;
 
       setFormularioAbierto({
         fecha: dia,
         horaInicio: `${String(horaInicioBloque).padStart(2, "0")}:00`,
-        recursoId: recursoUnico,
+        recursoId: recursoFiltroId || null,
         tipoRecurso: pestana,
       });
       return;
     }
 
-    // El bloque está ocupado para todos los recursos seleccionados: en vez
+    // El bloque está ocupado para todos los recursos considerados: en vez
     // de crear uno nuevo, se muestra el detalle del vuelo correspondiente.
     const [horaInicioBloque, horaFinBloque] = rangoBloque(indice);
     const inicioMs = new Date(dia).setHours(horaInicioBloque, 0, 0, 0);
     const finMs = new Date(dia).setHours(horaFinBloque, 0, 0, 0);
 
     const vueloEnBloque = vuelosDelDia(dia).find((v) => {
-      if (!seleccionados.has(Number(v.recursoId))) return false;
+      if (recursoFiltroId && Number(v.recursoId) !== Number(recursoFiltroId)) return false;
       const [vIni, vFin] = rangoMs(v);
       return vIni < finMs && vFin > inicioMs;
     });
@@ -239,23 +241,6 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
     setMensajeExito(mensaje);
     cargarVuelos();
   }
-
-  function alternarRecurso(id) {
-    setSeleccionados((prev) => {
-      const siguiente = new Set(prev);
-      if (siguiente.has(id)) siguiente.delete(id);
-      else siguiente.add(id);
-      return siguiente;
-    });
-  }
-
-  function alternarTodos() {
-    setSeleccionados((prev) =>
-      prev.size === recursosFiltrados.length ? new Set() : new Set(recursosFiltrados.map((r) => r.id))
-    );
-  }
-
-  const todosMarcados = recursosFiltrados.length > 0 && seleccionados.size === recursosFiltrados.length;
 
   return (
     <div className="calendario">
@@ -282,26 +267,27 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
         ))}
       </div>
 
-      {recursosFiltrados.length > 0 && (
-        <div className="calendario-filtros">
-          <label className="calendario-filtro-item calendario-filtro-item--todos">
-            <input type="checkbox" checked={todosMarcados} onChange={alternarTodos} />
-            Todos
-          </label>
-          {recursosFiltrados.map((recurso) => (
-            <label key={recurso.id} className="calendario-filtro-item">
-              <input
-                type="checkbox"
-                checked={seleccionados.has(recurso.id)}
-                onChange={() => alternarRecurso(recurso.id)}
-              />
-              {recurso.matricula}
-            </label>
-          ))}
-        </div>
-      )}
+      <div className="calendario-controles">
+        {esAdmin && recursosFiltrados.length > 0 && (
+          <select
+            className="calendario-selector-recurso"
+            value={recursoFiltroId}
+            onChange={(e) => setRecursoFiltroId(e.target.value)}
+            aria-label="Filtrar por recurso"
+          >
+            <option value="">Todos los recursos</option>
+            {recursosFiltrados.map((recurso) => (
+              <option key={recurso.id} value={recurso.id}>
+                {recurso.matricula}
+              </option>
+            ))}
+          </select>
+        )}
+        <button type="button" className="btn-chip btn-chip--secundario" onClick={() => setMisActividadesAbierto(true)}>
+          Mis actividades
+        </button>
+      </div>
 
-      {mensajeGuia && <p className="mensaje-guia">{mensajeGuia}</p>}
       {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
       {error && <p className="mensaje-error">{error}</p>}
 
@@ -331,15 +317,16 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
               const conCarriles = calcularCarriles(vuelosDelDia(dia));
               const hoverAqui = bloqueHover && mismoDia(bloqueHover.dia, dia) ? bloqueHover : null;
               const hoverDisponible = hoverAqui ? bloqueDisponibleParaAlgunRecurso(dia, hoverAqui.indice) : false;
+              const pasado = esFechaPasada(dia);
 
               return (
                 <div
                   key={dia.toISOString()}
-                  className="calendario-dia"
-                  style={{ height: `${ALTURA_TOTAL}px`, cursor: hoverDisponible ? "pointer" : "default" }}
-                  onMouseMove={(e) => manejarMouseMoveDia(e, dia)}
+                  className={`calendario-dia ${pasado ? "calendario-dia--pasado" : ""}`}
+                  style={{ height: `${ALTURA_TOTAL}px`, cursor: !pasado && hoverDisponible ? "pointer" : "default" }}
+                  onMouseMove={pasado ? undefined : (e) => manejarMouseMoveDia(e, dia)}
                   onMouseLeave={() => setBloqueHover(null)}
-                  onClick={(e) => manejarClickDia(e, dia)}
+                  onClick={pasado ? undefined : (e) => manejarClickDia(e, dia)}
                 >
                   {hoverAqui && hoverDisponible && (
                     <div
@@ -373,8 +360,8 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
                         style={{
                           top: `${top}px`,
                           height: `${altura}px`,
-                          left: `calc(${(carril / totalCarriles) * 100}% + 2px)`,
-                          width: `calc(${100 / totalCarriles}% - 4px)`,
+                          left: `calc(${(carril / totalCarriles) * 100}% + 4px)`,
+                          width: `calc(${100 / totalCarriles}% - 8px)`,
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -405,6 +392,9 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
           <span className="calendario-punto calendario-punto--confirmado" /> Confirmado
         </span>
         <span className="calendario-leyenda__item">
+          <span className="calendario-punto calendario-punto--en_curso" /> En curso
+        </span>
+        <span className="calendario-leyenda__item">
           <span className="calendario-punto calendario-punto--finalizado" /> Finalizado
         </span>
         <span className="calendario-leyenda__item">
@@ -430,6 +420,18 @@ export default function CalendarioSemanal({ mensajeGuiaTrigger }) {
           precarga={formularioAbierto}
           onCerrar={() => setFormularioAbierto(null)}
           onExito={manejarExitoFormulario}
+        />
+      )}
+
+      {misActividadesAbierto && (
+        <ModalMisActividades
+          vuelos={vuelos}
+          usuario={usuario}
+          onCerrar={() => setMisActividadesAbierto(false)}
+          onSeleccionar={(vuelo) => {
+            setMisActividadesAbierto(false);
+            setVueloSeleccionado(vuelo);
+          }}
         />
       )}
     </div>
