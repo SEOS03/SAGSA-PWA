@@ -15,12 +15,18 @@ const ITEMS_NAV = [
     visible: (usuario) => usuario?.rol === "administrador" || usuario?.rol === "instructor",
   },
   { etiqueta: "Crear usuario", ruta: "/panel/crear-usuario", visible: (usuario) => usuario?.rol === "administrador" },
-  { etiqueta: "Buscar usuario", ruta: "/panel/buscar-usuario", visible: (usuario) => usuario?.rol === "administrador" },
+  {
+    etiqueta: "Consulta de Usuarios",
+    ruta: "/panel/buscar-usuario",
+    visible: (usuario) => usuario?.rol === "administrador",
+  },
   {
     etiqueta: "Reportes de vuelos",
     ruta: "/panel/reportes-vuelos",
     visible: (usuario) => usuario?.rol === "administrador",
   },
+  { etiqueta: "Mi progreso", ruta: "/panel/mi-progreso", visible: (usuario) => usuario?.rol === "alumno" },
+  { etiqueta: "Mis alumnos", ruta: "/panel/mis-alumnos", visible: (usuario) => usuario?.rol === "instructor" },
   {
     etiqueta: "Permisos de Validación",
     ruta: "/panel/permisos-validacion",

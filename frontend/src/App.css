@@ -1291,3 +1291,50 @@
 .reporte-tabla tbody tr:hover {
   background: var(--bg);
 }
+
+/* ---------- Barra de progreso (Mi Progreso / Mis Alumnos / Consulta de Usuarios) ---------- */
+.barra-progreso {
+  position: relative;
+  width: 100%;
+  min-width: 90px;
+  height: 18px;
+  background: var(--bg);
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra-progreso__relleno {
+  height: 100%;
+  background: var(--sagsa-dorado);
+  transition: width 0.3s ease;
+}
+
+.barra-progreso__texto {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+/* ---------- Interruptor temporal de días pasados (solo super admin) ---------- */
+.calendario-interruptor-dias-pasados {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--advertencia-bg);
+  border: 1px solid rgba(184, 144, 46, 0.3);
+  border-radius: 999px;
+}
+
+.calendario-interruptor-dias-pasados__texto {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--advertencia);
+  white-space: nowrap;
+}

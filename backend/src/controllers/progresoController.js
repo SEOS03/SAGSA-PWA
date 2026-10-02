@@ -95,15 +95,30 @@ async function reasignarInstructor(req, res) {
   }
 }
 
-// GET /api/progreso?alumnoId= (administrador o super admin; usado para
-// mostrar las inscripciones activas de un alumno específico y poder
-// reasignarle instructor desde el buscador de usuarios)
+// GET /api/progreso (administrador o super admin)
+// - Con alumnoId: inscripciones activas de ESE alumno específico (usado
+//   para reasignarle instructor desde el buscador de usuarios) — sin
+//   cambios respecto al comportamiento anterior.
+// - Sin alumnoId: TODAS las inscripciones activas de cualquier alumno
+//   (usado por la pestaña "Progreso de alumnos" de ConsultaUsuarios.jsx),
+//   con los datos del alumno incluidos ya que aquí no se sabe de antemano
+//   de quién es cada fila.
 async function listarProgresoPorAlumno(req, res) {
   try {
     const { alumnoId } = req.query;
 
     if (!alumnoId) {
-      return res.status(400).json({ mensaje: "alumnoId es obligatorio." });
+      const progresos = await ProgresoAlumno.findAll({
+        where: { estadoPrograma: { [Op.in]: ESTADOS_ACTIVOS } },
+        include: [
+          { model: User, as: "alumno", attributes: ["id", "nombre", "dpi"] },
+          { model: Programa },
+          { model: User, as: "instructorAsignado", attributes: ["id", "nombre"] },
+        ],
+        order: [["fechaInicio", "DESC"]],
+      });
+
+      return res.json({ mensaje: "Inscripciones obtenidas correctamente.", progresos });
     }
 
     const progresos = await ProgresoAlumno.findAll({
@@ -115,7 +130,7 @@ async function listarProgresoPorAlumno(req, res) {
     return res.json({ mensaje: "Inscripciones obtenidas correctamente.", progresos });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ mensaje: "Error al obtener las inscripciones del alumno." });
+    return res.status(500).json({ mensaje: "Error al obtener las inscripciones." });
   }
 }
 

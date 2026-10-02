@@ -5,10 +5,12 @@ import RutaSoloAdmin from "./components/RutaSoloAdmin";
 import RutaSoloSuperAdmin from "./components/RutaSoloSuperAdmin";
 import RutaValidadorHorometro from "./components/RutaValidadorHorometro";
 import RutaHistorialSolicitudes from "./components/RutaHistorialSolicitudes";
+import RutaSoloAlumno from "./components/RutaSoloAlumno";
+import RutaSoloInstructor from "./components/RutaSoloInstructor";
 import Login from "./pages/Login";
 import CambiarPassword from "./pages/CambiarPassword";
 import CrearUsuario from "./pages/CrearUsuario";
-import BuscarUsuarioPorDpi from "./pages/BuscarUsuarioPorDpi";
+import ConsultaUsuarios from "./pages/ConsultaUsuarios";
 import SolicitarRecuperacion from "./pages/SolicitarRecuperacion";
 import RestablecerPassword from "./pages/RestablecerPassword";
 import Panel from "./pages/Panel";
@@ -19,6 +21,8 @@ import HistorialSolicitudes from "./pages/HistorialSolicitudes";
 import ValidarHorometro from "./pages/ValidarHorometro";
 import PermisosValidacion from "./pages/PermisosValidacion";
 import ReportesVuelos from "./pages/ReportesVuelos";
+import MiProgreso from "./pages/MiProgreso";
+import MisAlumnos from "./pages/MisAlumnos";
 import "./App.css";
 
 function App() {
@@ -58,7 +62,7 @@ function App() {
             path="/panel/buscar-usuario"
             element={
               <RutaSoloAdmin>
-                <BuscarUsuarioPorDpi />
+                <ConsultaUsuarios />
               </RutaSoloAdmin>
             }
           />
@@ -124,6 +128,22 @@ function App() {
               <RutaSoloAdmin>
                 <ReportesVuelos />
               </RutaSoloAdmin>
+            }
+          />
+          <Route
+            path="/panel/mi-progreso"
+            element={
+              <RutaSoloAlumno>
+                <MiProgreso />
+              </RutaSoloAlumno>
+            }
+          />
+          <Route
+            path="/panel/mis-alumnos"
+            element={
+              <RutaSoloInstructor>
+                <MisAlumnos />
+              </RutaSoloInstructor>
             }
           />
         </Routes>

@@ -225,6 +225,21 @@ export function AuthProvider({ children }) {
     return respuesta.data;
   }
 
+  async function listarProgresoActivo() {
+    const respuesta = await api.get("/progreso");
+    return respuesta.data;
+  }
+
+  async function obtenerMiProgreso() {
+    const respuesta = await api.get("/progreso/mio");
+    return respuesta.data;
+  }
+
+  async function obtenerMisAlumnos() {
+    const respuesta = await api.get("/progreso/mis-alumnos");
+    return respuesta.data;
+  }
+
   // ---------- Sprint 4: Reportes ----------
 
   async function listarReporteVuelos(filtros) {
@@ -276,6 +291,9 @@ export function AuthProvider({ children }) {
         inscribirAlumno,
         listarProgresoDeAlumno,
         reasignarInstructorProgreso,
+        listarProgresoActivo,
+        obtenerMiProgreso,
+        obtenerMisAlumnos,
         listarReporteVuelos,
       }}
     >

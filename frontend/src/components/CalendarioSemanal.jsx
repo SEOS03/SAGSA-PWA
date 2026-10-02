@@ -112,6 +112,9 @@ export default function CalendarioSemanal() {
   const [bloqueHover, setBloqueHover] = useState(null); // { dia, indice }
   const [formularioAbierto, setFormularioAbierto] = useState(null); // null | { fecha, horaInicio, recursoId, tipoRecurso }
   const [misActividadesAbierto, setMisActividadesAbierto] = useState(false);
+  // Interruptor temporal, solo super admin: NUNCA persiste entre recargas
+  // (por diseño) — vuelve a false al refrescar la página.
+  const [permitirDiasPasados, setPermitirDiasPasados] = useState(false);
 
   const esAdmin = usuario?.rol === "administrador";
 
@@ -286,6 +289,20 @@ export default function CalendarioSemanal() {
         <button type="button" className="btn-chip btn-chip--secundario" onClick={() => setMisActividadesAbierto(true)}>
           Mis actividades
         </button>
+        {usuario?.esSuperAdmin && (
+          <div className="calendario-interruptor-dias-pasados">
+            <span className="calendario-interruptor-dias-pasados__texto">Días pasados editables</span>
+            <label className="interruptor">
+              <input
+                type="checkbox"
+                checked={permitirDiasPasados}
+                onChange={(e) => setPermitirDiasPasados(e.target.checked)}
+                aria-label="Permitir editar días pasados (temporal)"
+              />
+              <span className="interruptor__control" />
+            </label>
+          </div>
+        )}
       </div>
 
       {mensajeExito && <p className="mensaje-exito">{mensajeExito}</p>}
@@ -317,7 +334,7 @@ export default function CalendarioSemanal() {
               const conCarriles = calcularCarriles(vuelosDelDia(dia));
               const hoverAqui = bloqueHover && mismoDia(bloqueHover.dia, dia) ? bloqueHover : null;
               const hoverDisponible = hoverAqui ? bloqueDisponibleParaAlgunRecurso(dia, hoverAqui.indice) : false;
-              const pasado = esFechaPasada(dia);
+              const pasado = !permitirDiasPasados && esFechaPasada(dia);
 
               return (
                 <div
