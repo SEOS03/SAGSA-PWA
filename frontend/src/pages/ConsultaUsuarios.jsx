@@ -104,7 +104,7 @@ export default function ConsultaUsuarios() {
           </div>
 
           <form className="reporte-filtros" onSubmit={manejarEnvioFormulario}>
-            <div className="reporte-filtros__campo">
+            <div className="reporte-filtros__campo reporte-filtros__campo--dpi">
               <label htmlFor="dpiConsulta">Número de DPI</label>
               <input
                 id="dpiConsulta"
@@ -157,7 +157,7 @@ export default function ConsultaUsuarios() {
                 <p className="subtitulo">No hay inscripciones activas que coincidan.</p>
               ) : (
                 <div className="reporte-tabla-contenedor">
-                  <table className="reporte-tabla">
+                  <table className="reporte-tabla reporte-tabla--compacta">
                     <thead>
                       <tr>
                         <th>Alumno</th>
@@ -179,11 +179,11 @@ export default function ConsultaUsuarios() {
                           <td>
                             {Number(p.horasAvionAcumuladas)} / {Number(p.Programa?.horasAvionTotal ?? 0)}
                           </td>
-                          <td style={{ minWidth: "140px" }}>
+                          <td style={{ minWidth: "130px" }}>
                             <BarraProgreso porcentaje={p.cumplimiento?.pctTotal ?? 0} />
                           </td>
-                          <td style={{ minWidth: "180px" }}>
-                            <IndicadorCumplimiento cumplimiento={p.cumplimiento} />
+                          <td style={{ minWidth: "160px" }}>
+                            <IndicadorCumplimiento cumplimiento={p.cumplimiento} compacto />
                           </td>
                         </tr>
                       ))}

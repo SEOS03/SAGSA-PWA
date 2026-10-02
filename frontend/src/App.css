@@ -136,6 +136,12 @@
   cursor: pointer;
 }
 
+/* Área táctil mínima de 36px para el ✕ (antes 30×31). */
+.panel-lateral__cerrar {
+  min-width: 36px;
+  min-height: 36px;
+}
+
 .panel-lateral__enlace {
   padding: 14px 18px;
   font-size: 0.92rem;
@@ -424,6 +430,32 @@
   border-bottom-color: var(--sagsa-dorado);
 }
 
+/* Dentro de .formulario-auth las pestañas heredaban el estilo de botón
+   principal (fondo negro, 48px, margen superior); se restaura el de pestaña. */
+.formulario-auth .pestana,
+.formulario-auth .pestana:hover:not(:disabled) {
+  margin-top: 0;
+  padding: 10px 16px;
+  min-height: auto;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--texto-secundario);
+  font-size: 0.9rem;
+  letter-spacing: normal;
+}
+
+.formulario-auth .pestana:hover:not(:disabled) {
+  color: var(--texto);
+}
+
+.formulario-auth .pestana--activa,
+.formulario-auth .pestana--activa:hover:not(:disabled) {
+  color: var(--sagsa-dorado-oscuro);
+  border-bottom-color: var(--sagsa-dorado);
+}
+
 /* ---------- Tarjetas de recurso / solicitud ---------- */
 .lista-recursos {
   display: flex;
@@ -515,6 +547,22 @@
   background: var(--superficie);
   color: var(--texto);
   font-size: 0.88rem;
+}
+
+/* En teléfono angosto el select de estado ("Próximo a mantenimiento") no cabe
+   junto a "Cambiar estado": el select pasa a ocupar su propia línea. */
+@media (max-width: 479px) {
+  .accion-inline:has(select) {
+    flex-wrap: wrap;
+  }
+
+  .accion-inline select {
+    flex-basis: 100%;
+  }
+
+  .accion-inline select ~ .btn-chip {
+    flex: 1;
+  }
 }
 
 /* ---------- Indicadores de estado ---------- */
@@ -615,6 +663,56 @@
   white-space: normal;
 }
 
+/* Al partirse en varias líneas el punto no debe encogerse. */
+.estado-badge--pendiente-rac::before {
+  flex-shrink: 0;
+}
+
+/* Variante compacta (tabla de Progreso de alumnos): estado arriba y horas
+   faltantes abreviadas abajo, centrado. El punto de color pasa a la primera
+   línea para que no quede apilado sobre el texto. */
+.estado-badge--compacto {
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 12px;
+  border-radius: var(--radio-chico);
+  text-align: center;
+}
+
+.estado-badge--compacto::before {
+  display: none;
+}
+
+.estado-badge__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.estado-badge__estado::before {
+  content: "";
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.estado-badge__detalle {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  opacity: 0.8;
+}
+
+/* Cada parte ("-6h sim") nunca se parte; si no caben ambas, el salto ocurre
+   solo después de la coma. */
+.estado-badge__detalle-parte {
+  white-space: nowrap;
+}
+
 /* ---------- Botones pequeños de acción ---------- */
 .btn-chip {
   display: inline-flex;
@@ -700,6 +798,14 @@
   opacity: 0;
   cursor: pointer;
   z-index: 1;
+}
+
+/* El input invisible se extiende 3px arriba y abajo: el área táctil pasa de
+   30 a 36px de alto sin cambiar el tamaño visual del interruptor. */
+.interruptor input {
+  top: -3px;
+  bottom: -3px;
+  height: auto;
 }
 
 .interruptor__control {
@@ -1224,6 +1330,13 @@
   min-width: 160px;
 }
 
+/* El campo de DPI necesita más que los 160px base para mostrar completo su
+   placeholder ("13 dígitos, sin espacios ni guiones"). */
+.reporte-filtros__campo--dpi {
+  flex: 1 1 250px;
+  max-width: 320px;
+}
+
 .reporte-filtros__campo label {
   font-size: 0.8rem;
   font-weight: 600;
@@ -1282,6 +1395,18 @@
   border-collapse: collapse;
   min-width: 1900px;
   font-size: 0.82rem;
+}
+
+/* Tablas con pocas columnas (Progreso de alumnos): ocupan el ancho del
+   contenedor en vez de los 1900px del reporte; en teléfono siguen con
+   scroll horizontal contenido. */
+.reporte-tabla--compacta {
+  width: 100%;
+  min-width: 0;
+}
+
+.reporte-tabla.reporte-tabla--compacta th {
+  white-space: normal;
 }
 
 .reporte-tabla th,
