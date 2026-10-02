@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const { ProgresoAlumno, Programa, User } = require("../models");
+const { conCumplimiento } = require("../utils/calcularProgreso");
 
 const ESTADOS_ACTIVOS = ["en_curso", "pendiente_chequeo"];
 
@@ -118,7 +119,7 @@ async function listarProgresoPorAlumno(req, res) {
         order: [["fechaInicio", "DESC"]],
       });
 
-      return res.json({ mensaje: "Inscripciones obtenidas correctamente.", progresos });
+      return res.json({ mensaje: "Inscripciones obtenidas correctamente.", progresos: progresos.map(conCumplimiento) });
     }
 
     const progresos = await ProgresoAlumno.findAll({
@@ -127,7 +128,7 @@ async function listarProgresoPorAlumno(req, res) {
       order: [["fechaInicio", "DESC"]],
     });
 
-    return res.json({ mensaje: "Inscripciones obtenidas correctamente.", progresos });
+    return res.json({ mensaje: "Inscripciones obtenidas correctamente.", progresos: progresos.map(conCumplimiento) });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener las inscripciones." });
@@ -144,7 +145,7 @@ async function obtenerMiProgreso(req, res) {
       order: [["fechaInicio", "DESC"]],
     });
 
-    return res.json({ mensaje: "Progreso obtenido correctamente.", progresos });
+    return res.json({ mensaje: "Progreso obtenido correctamente.", progresos: progresos.map(conCumplimiento) });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener el progreso." });
@@ -161,7 +162,7 @@ async function obtenerMisAlumnos(req, res) {
       order: [["fechaInicio", "DESC"]],
     });
 
-    return res.json({ mensaje: "Alumnos asignados obtenidos correctamente.", progresos });
+    return res.json({ mensaje: "Alumnos asignados obtenidos correctamente.", progresos: progresos.map(conCumplimiento) });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ mensaje: "Error al obtener los alumnos asignados." });

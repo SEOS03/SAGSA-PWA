@@ -602,6 +602,19 @@
   background: var(--error-bg);
 }
 
+/* Cumplimiento RAC-141 (horas mínimas) por inscripción. El pendiente puede
+   llevar el detalle de horas faltantes, así que se permite partir la línea. */
+.estado-badge--cumple {
+  color: var(--exito);
+  background: var(--exito-bg);
+}
+
+.estado-badge--pendiente-rac {
+  color: var(--advertencia);
+  background: var(--advertencia-bg);
+  white-space: normal;
+}
+
 /* ---------- Botones pequeños de acción ---------- */
 .btn-chip {
   display: inline-flex;
@@ -1337,4 +1350,8 @@
   font-weight: 600;
   color: var(--advertencia);
   white-space: nowrap;
+}
+
+.indicador-cumplimiento {
+  margin-top: 8px;
 }

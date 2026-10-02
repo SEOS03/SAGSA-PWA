@@ -1,5 +1,6 @@
 const { ProgresoAlumno, Programa, User } = require("../models");
 const calcularPrioridad = require("../utils/calcularPrioridad");
+const calcularProgreso = require("../utils/calcularProgreso");
 
 // GET /api/alumnos/lista-prioridad (administrador o super admin)
 async function listarPrioridadAlumnos(req, res) {
@@ -21,6 +22,7 @@ async function listarPrioridadAlumnos(req, res) {
       leccionActual: progreso.leccionActual,
       vueloSoloCompletado: progreso.vueloSoloCompletado,
       prioridadCalculada: calcularPrioridad(progreso.leccionActual, progreso.Programa.nombre),
+      cumplimiento: calcularProgreso(progreso),
     }));
 
     if (ordenarPor === "leccion") {

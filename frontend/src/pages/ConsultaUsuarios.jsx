@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 import ModalInscribirPrograma from "../components/ModalInscribirPrograma";
 import BarraProgreso from "../components/BarraProgreso";
-import { calcularProgreso } from "../utils/calcularProgreso";
+import IndicadorCumplimiento from "../components/IndicadorCumplimiento";
 
 const PESTANAS = [
   { valor: "usuarios", etiqueta: "Todos los usuarios" },
@@ -165,6 +165,7 @@ export default function ConsultaUsuarios() {
                         <th>Horas simulador</th>
                         <th>Horas avión</th>
                         <th>Progreso</th>
+                        <th>Cumplimiento RAC-141</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -179,7 +180,10 @@ export default function ConsultaUsuarios() {
                             {Number(p.horasAvionAcumuladas)} / {Number(p.Programa?.horasAvionTotal ?? 0)}
                           </td>
                           <td style={{ minWidth: "140px" }}>
-                            <BarraProgreso porcentaje={calcularProgreso(p)} />
+                            <BarraProgreso porcentaje={p.cumplimiento?.pctTotal ?? 0} />
+                          </td>
+                          <td style={{ minWidth: "180px" }}>
+                            <IndicadorCumplimiento cumplimiento={p.cumplimiento} />
                           </td>
                         </tr>
                       ))}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import Encabezado from "../components/Encabezado";
 import BarraProgreso from "../components/BarraProgreso";
-import { calcularProgreso } from "../utils/calcularProgreso";
+import IndicadorCumplimiento from "../components/IndicadorCumplimiento";
 
 const ETIQUETAS_PROGRAMA = {
   piloto_privado: "Piloto privado",
@@ -61,7 +61,10 @@ export default function MisAlumnos() {
                     {" · "}
                     Horas avión: {Number(p.horasAvionAcumuladas)} / {Number(p.Programa?.horasAvionTotal ?? 0)}
                   </p>
-                  <BarraProgreso porcentaje={calcularProgreso(p)} />
+                  <BarraProgreso porcentaje={p.cumplimiento?.pctTotal ?? 0} />
+                  <div className="indicador-cumplimiento">
+                    <IndicadorCumplimiento cumplimiento={p.cumplimiento} />
+                  </div>
                   {p.Programa?.totalLecciones != null && (
                     <p className="subtitulo">
                       Lección actual: {p.leccionActual} / {p.Programa.totalLecciones}
